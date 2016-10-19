@@ -80,11 +80,19 @@ public class KeyPair {
 		byte[] xs = bigIntegerToBytes(x, 32);
 		byte[] ys = bigIntegerToBytes(y, 32);
 		byte[] uncompressed = concat(PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
+		return publicKeyToAddress(uncompressed);
+	}
+
+	public static String publicKeyToAddress(byte[] uncompressed) {
+		if (uncompressed.length != 65) {
+			throw new IllegalArgumentException(
+					"bad length of uncompressed bytes: expect 65 but actual " + uncompressed.length);
+		}
 		byte[] hash = Hash.ripeMd160(Hash.sha256(uncompressed));
 		return hashToPublicKey(hash);
 	}
 
-	public static String hashToPublicKey(byte[] hash) {
+	static String hashToPublicKey(byte[] hash) {
 		byte[] hashWithNetworkId = concat(NETWORK_ID_ARRAY, hash);
 		byte[] checksum = Hash.doubleSha256(hashWithNetworkId);
 		byte[] address = concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));

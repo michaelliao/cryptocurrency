@@ -2,8 +2,8 @@ package com.itranswarp.bitcoin;
 
 import java.io.IOException;
 
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataOutputStream;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
 
 public class OutPoint {
 
@@ -11,7 +11,7 @@ public class OutPoint {
 	long index; // uint32, the index of the specific output in the transaction.
 				// The first output is 0, etc.
 
-	public OutPoint(LittleEndianDataInputStream input) throws IOException {
+	public OutPoint(BitCoinBlockDataInput input) throws IOException {
 		this.hash = input.readBytes(32);
 		this.index = input.readUnsignedInt();
 	}
@@ -32,7 +32,7 @@ public class OutPoint {
 		this.index = index;
 	}
 
-	public void dump(LittleEndianDataOutputStream output) throws IOException {
+	public void dump(BitCoinBlockDataOutput output) throws IOException {
 		output.write(hash);
 		output.writeUnsignedInt(index);
 	}

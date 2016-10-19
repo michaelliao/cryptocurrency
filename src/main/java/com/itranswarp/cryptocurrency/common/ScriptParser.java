@@ -5,13 +5,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+
 public class ScriptParser {
+
+	private byte[] address;
 
 	/**
 	 * Parse BitCoin script: https://en.bitcoin.it/wiki/Script
 	 */
-	public static String parse(byte[] script) {
-		try (LittleEndianDataInputStream input = new LittleEndianDataInputStream(new ByteArrayInputStream(script))) {
+	public String parse(byte[] script) {
+		try (BitCoinBlockDataInput input = new BitCoinBlockDataInput(new ByteArrayInputStream(script))) {
 			List<String> list = new ArrayList<>();
 			int n;
 			while ((n = input.read()) != (-1)) {
@@ -45,7 +49,8 @@ public class ScriptParser {
 					break;
 				default:
 					if (n >= 0x01 && n <= 0x4b) {
-						list.add("DATA(" + KeyPair.hashToPublicKey(input.readBytes(n)) + ")");
+						this.address = input.readBytes(n);
+						list.add("DATA(" + Hash.toHexString(this.address) + ")");
 					} else {
 						list.add("???");
 					}
@@ -57,4 +62,14 @@ public class ScriptParser {
 		}
 	}
 
+	public String getAddress() {
+		if (this.address == null) {
+			return null;
+		}
+		if (this.address.length == 65) {
+			// 65 bytes:
+			return KeyPair.publicKeyToAddress(this.address);
+		}
+		return Hash.toHexString(this.address);
+	}
 }

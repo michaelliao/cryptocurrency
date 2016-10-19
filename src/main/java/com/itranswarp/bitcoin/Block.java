@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataOutputStream;
 
 public class Block {
 
@@ -15,15 +15,14 @@ public class Block {
 	BlockHeader blockHeader;
 	Transaction[] txs;
 
-	public Block(LittleEndianDataInputStream input) throws IOException {
-		// read magic number: d9b4bef9
-		int magic = input.readInt();
-		if (magic != 0xd9b4bef9) {
-			throw new RuntimeException("Bad magic number.");
-		}
+	public Block() {
+	}
+
+	public Block(BitCoinBlockDataInput input) throws IOException {
 		// read block size:
 		this.size = input.readInt();
 		this.blockHeader = new BlockHeader(input);
+		// number of tx:
 		long n_tx = input.readVarInt();
 		this.txs = new Transaction[(int) n_tx];
 		for (int i = 0; i < txs.length; i++) {
@@ -65,7 +64,7 @@ public class Block {
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getBlockHash() {
 		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (LittleEndianDataOutputStream output = new LittleEndianDataOutputStream(byteOutput)) {
+		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
 			BlockHeader hdr = this.getBlockHeader();
 			output.writeInt(hdr.getVersion());
 			output.write(hdr.getPrevHash());
@@ -87,7 +86,7 @@ public class Block {
 		BlockHeader hdr = this.getBlockHeader();
 		int zeros = 3;
 		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (LittleEndianDataOutputStream output = new LittleEndianDataOutputStream(byteOutput)) {
+		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
 			output.writeInt(hdr.getVersion());
 			output.write(hdr.getPrevHash());
 			output.write(getMerkleRoot());
@@ -139,9 +138,9 @@ public class Block {
 			byte[] bs = tx.getHash();
 			return new Bytes(bs);
 		}).toArray(Bytes[]::new);
-		do {
+		while (hashes.length > 1) {
 			hashes = merkleHash(hashes);
-		} while (hashes.length > 1);
+		}
 		return hashes[0].data;
 	}
 

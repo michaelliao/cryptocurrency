@@ -2,7 +2,7 @@ package com.itranswarp.bitcoin;
 
 import java.io.IOException;
 
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
 
 public class NetworkAddress {
 	long time; // uint32, the Time (version >= 31402). Not present in version
@@ -13,7 +13,7 @@ public class NetworkAddress {
 	// followed by the 4 bytes of the IPv4 address
 	int port; // uint16, port number
 
-	public NetworkAddress(LittleEndianDataInputStream input) throws IOException {
+	public NetworkAddress(BitCoinBlockDataInput input) throws IOException {
 		this.time = input.readUnsignedInt();
 		this.services = input.readLong();
 		this.ipv6 = input.readBytes(16);

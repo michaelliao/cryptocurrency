@@ -2,8 +2,8 @@ package com.itranswarp.bitcoin;
 
 import java.io.IOException;
 
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataOutputStream;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
 
 public class TxIn {
 
@@ -14,7 +14,7 @@ public class TxIn {
 					// Intended for "replacement" of transactions when
 					// information is updated before inclusion into a block.
 
-	public TxIn(LittleEndianDataInputStream input) throws IOException {
+	public TxIn(BitCoinBlockDataInput input) throws IOException {
 		this.previousOutput = new OutPoint(input);
 		this.signatureLength = input.readVarInt();
 		this.signature = input.readBytes((int) signatureLength);
@@ -45,11 +45,24 @@ public class TxIn {
 		this.sequence = sequence;
 	}
 
-	public void dump(LittleEndianDataOutputStream output) throws IOException {
+	public boolean isCoinbase() {
+		return this.previousOutput != null && this.previousOutput.hash != null && isZero(this.previousOutput.hash);
+	}
+
+	public void dump(BitCoinBlockDataOutput output) throws IOException {
 		this.previousOutput.dump(output);
 		output.writeVarInt(this.signatureLength);
 		output.write(this.signature);
 		output.writeUnsignedInt(this.sequence);
+	}
+
+	private boolean isZero(byte[] bs) {
+		for (byte b : bs) {
+			if (b != 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

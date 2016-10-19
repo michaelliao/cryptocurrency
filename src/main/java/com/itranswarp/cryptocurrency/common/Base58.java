@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class Base58 {
+
 	static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
 	static final char ENCODED_ZERO = ALPHABET[0];
 	static final int[] INDEXES = new int[128];

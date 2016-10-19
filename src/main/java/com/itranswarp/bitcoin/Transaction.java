@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataOutputStream;
 import com.itranswarp.cryptocurrency.common.LockTimeSerializer;
 
 public class Transaction {
@@ -29,7 +29,7 @@ public class Transaction {
 	// lock_time is irrelevant. Otherwise, the transaction may not be added to a
 	// block until after lock_time (see NLockTime).
 
-	public Transaction(LittleEndianDataInputStream input) throws IOException {
+	public Transaction(BitCoinBlockDataInput input) throws IOException {
 		this.version = input.readInt();
 		this.tx_in_count = input.readVarInt();
 		this.tx_ins = new TxIn[(int) this.tx_in_count];
@@ -48,7 +48,7 @@ public class Transaction {
 	public byte[] getHash() {
 		byte[] buffer = null;
 		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (LittleEndianDataOutputStream output = new LittleEndianDataOutputStream(byteOutput)) {
+		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
 			this.dump(output);
 			buffer = byteOutput.toByteArray();
 		} catch (IOException e) {
@@ -57,7 +57,7 @@ public class Transaction {
 		return Hash.doubleSha256(buffer);
 	}
 
-	public void dump(LittleEndianDataOutputStream output) throws IOException {
+	public void dump(BitCoinBlockDataOutput output) throws IOException {
 		output.writeInt(version);
 		output.writeVarInt(tx_in_count);
 		for (int i = 0; i < tx_ins.length; i++) {

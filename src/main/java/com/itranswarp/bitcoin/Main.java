@@ -1,6 +1,7 @@
 package com.itranswarp.bitcoin;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -12,19 +13,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
 import com.itranswarp.cryptocurrency.common.Hash;
-import com.itranswarp.cryptocurrency.common.LittleEndianDataInputStream;
 
 public class Main {
 
 	public static void main(String[] args) throws Exception {
-		String file = "block-163657.bin";
-		try (LittleEndianDataInputStream input = new LittleEndianDataInputStream(
-				new BufferedInputStream(new FileInputStream(file)))) {
-			Block block = new Block(input);
-			System.out.println(toJson(block));
-			// block.calculateNonce();
-		}
+		String path = "/Users/liaoxuefeng/Bitcoin/blocks";
+		BlockChainImporter importer = new BlockChainImporter();
+		// importer.importFromDir(path);
+		importer.importFromFile(new File("/Users/liaoxuefeng/Bitcoin/blocks/blk00000.dat"));
+		// try (LittleEndianDataInputStream input = new
+		// LittleEndianDataInputStream(
+		// new BufferedInputStream(new FileInputStream(file)))) {
+		// Block block = new Block(input);
+		// System.out.println(toJson(block));
+		// // block.calculateNonce();
+		// }
 	}
 
 	static String toJson(Object o) throws Exception {
