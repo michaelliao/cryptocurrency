@@ -1,10 +1,12 @@
-package com.itranswarp.bitcoin;
+package com.itranswarp.bitcoin.message;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
 
 public class NetworkAddress {
+	
 	long time; // uint32, the Time (version >= 31402). Not present in version
 				// message.
 	long services; // uint64, same service(s) listed in version
@@ -20,4 +22,8 @@ public class NetworkAddress {
 		this.port = input.readUnsignedShort();
 	}
 
+	public NetworkAddress() {
+		this.time = Instant.now().getEpochSecond();
+		
+	}
 }

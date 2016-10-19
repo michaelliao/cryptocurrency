@@ -50,5 +50,6 @@ public class BitCoinPeerDiscover implements Discover {
 		for (String node : nodes) {
 			log.info("Found node: " + node);
 		}
+		
 	}
 }

@@ -53,9 +53,9 @@ public class BlockChainImporter {
 		try (BitCoinBlockDataInput input = new BitCoinBlockDataInput(
 				new BufferedInputStream(new FileInputStream(file)))) {
 			for (int i = 0; i < 2; i++) {
-				// read magic number: d9b4bef9
+				// read magic number: 0xd9b4bef9
 				int magic = input.readInt();
-				if (magic != 0xd9b4bef9) {
+				if (magic != BitcoinConstants.MAGIC) {
 					throw new RuntimeException("Bad magic number.");
 				}
 				Block block = new Block(input);
