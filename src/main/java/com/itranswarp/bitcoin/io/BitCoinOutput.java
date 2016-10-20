@@ -2,6 +2,7 @@ package com.itranswarp.bitcoin.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public final class BitCoinOutput {
 
@@ -54,11 +55,11 @@ public final class BitCoinOutput {
 	public BitCoinOutput writeVarInt(long n) {
 		if (n < 0xfd) {
 			writeByte((int) n);
-		} else if (n == 0xfd) {
+		} else if (n <= 0xffff) {
 			writeByte(0xfd);
 			writeByte((int) (n & 0xff));
 			writeByte((int) ((n >> 8) & 0xff));
-		} else if (n == 0xfe) {
+		} else if (n <= 0xffffffff) {
 			writeByte(0xfe);
 			writeInt((int) n);
 		} else {
@@ -77,6 +78,13 @@ public final class BitCoinOutput {
 	public BitCoinOutput writeUnsignedShort(int i) {
 		short n = (short) (0xffff & i);
 		writeShort(n);
+		return this;
+	}
+
+	public BitCoinOutput writeString(String str) {
+		byte[] bs = str.getBytes(StandardCharsets.UTF_8);
+		writeVarInt(bs.length);
+		write(bs);
 		return this;
 	}
 

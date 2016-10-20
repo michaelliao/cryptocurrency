@@ -1,6 +1,7 @@
 package com.itranswarp.bitcoin.message;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.time.Instant;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
@@ -32,12 +33,22 @@ public class NetworkAddress {
 		this.port = BitcoinConstants.PORT;
 	}
 
-	public byte[] toByteArray() {
-		return new BitCoinOutput().writeUnsignedInt(time) // time
-				.writeLong(this.services) // service
+	public NetworkAddress(InetAddress addr) {
+		this.time = Instant.now().getEpochSecond();
+		this.services = 1;
+		this.ipv6 = NetworkUtils.getIPv6(addr);
+		this.port = BitcoinConstants.PORT;
+	}
+
+	public byte[] toByteArray(boolean excludeTime) {
+		BitCoinOutput output = new BitCoinOutput();
+		if (!excludeTime) {
+			output.writeUnsignedInt(time); // time
+		}
+		output.writeLong(this.services) // service
 				.write(this.ipv6) // ipv6
-				.writeUnsignedShort(this.port) // port
-				.toByteArray();
+				.writeUnsignedShort(this.port); // port
+		return output.toByteArray();
 	}
 
 }

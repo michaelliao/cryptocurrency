@@ -7,12 +7,17 @@ import com.itranswarp.cryptocurrency.common.Hash;
 
 public class NetworkUtils {
 
+	private static InetAddress local = null;
+
 	public static InetAddress getLocalInetAddress() {
+		if (local == null) {
+		}
 		try {
-			return InetAddress.getLocalHost();
+			local = InetAddress.getLocalHost();
 		} catch (UnknownHostException e) {
 			throw new RuntimeException(e);
 		}
+		return local;
 	}
 
 	public static byte[] getIPv6(InetAddress inetAddr) {

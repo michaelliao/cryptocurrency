@@ -6,15 +6,19 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.message.VersionMessage;
 import com.itranswarp.cryptocurrency.common.Discover;
+import com.itranswarp.cryptocurrency.common.Hash;
 
 /**
  * Discover full nodes by DNS query:
@@ -57,17 +61,25 @@ public class BitCoinPeerDiscover implements Discover {
 		}
 		for (String node : nodes) {
 			log.info("Try connect to node: " + node);
-			try (Socket sock = new Socket(node, 8333)) {
+			try (Socket sock = new Socket()) {
+				sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 5000);
 				try (InputStream input = sock.getInputStream()) {
 					try (OutputStream output = sock.getOutputStream()) {
-						output.write(new VersionMessage().toByteArray());
+						VersionMessage msg = new VersionMessage(0, sock.getInetAddress());
+						byte[] msgData = msg.toByteArray();
+						log.info("VERSION MESSAGE: " + Hash.toHexString(msgData, true));
+						output.write(msgData);
 						byte[] buffer = new byte[1024];
 						int n = input.read(buffer);
-						System.out.println("read " + n);
+						if (n > 0) {
+							log.info("RESP: " + Hash.toHexString(buffer, true));
+							VersionMessage ver = new VersionMessage(Arrays.copyOfRange(buffer, 0, n));
+
+						}
 						break;
 					}
 				}
-			} catch (ConnectException e) {
+			} catch (SocketTimeoutException | ConnectException e) {
 				// ignore
 			}
 		}

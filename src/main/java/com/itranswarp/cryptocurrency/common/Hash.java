@@ -37,14 +37,21 @@ public class Hash {
 	static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
 	public static String toHexString(byte[] b) {
+		return toHexString(b, false);
+	}
+
+	public static String toHexString(byte[] b, boolean sep) {
 		StringBuilder sb = new StringBuilder(b.length << 2);
 		for (byte x : b) {
 			int hi = (x & 0xf0) >> 4;
 			int lo = x & 0x0f;
 			sb.append(HEX_CHARS[hi]);
 			sb.append(HEX_CHARS[lo]);
+			if (sep) {
+				sb.append(' ');
+			}
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	public static String toHexStringAsBigEndian(byte[] b) {

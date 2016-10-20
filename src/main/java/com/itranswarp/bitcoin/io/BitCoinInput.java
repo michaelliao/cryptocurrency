@@ -1,5 +1,6 @@
 package com.itranswarp.bitcoin.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,10 @@ public final class BitCoinInput implements AutoCloseable {
 
 	public BitCoinInput(InputStream in) {
 		this.in = in;
+	}
+
+	public BitCoinInput(byte[] data) {
+		this.in = new ByteArrayInputStream(data);
 	}
 
 	/**
