@@ -9,11 +9,10 @@ package com.itranswarp.bitcoin.message;
 public class VersionMessage extends Message {
 
 	public VersionMessage() {
-		super("version", createPayload());
-
+		super("version");
 	}
 
-	static byte[] createPayload() {
+	protected byte[] getPayload() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinInput;
 
 public class BlockChainImporter {
 
@@ -50,7 +50,7 @@ public class BlockChainImporter {
 
 	void importFromFile(File file) throws IOException {
 		log.info("Import blocks from file: " + file.getAbsolutePath() + "...");
-		try (BitCoinBlockDataInput input = new BitCoinBlockDataInput(
+		try (BitCoinInput input = new BitCoinInput(
 				new BufferedInputStream(new FileInputStream(file)))) {
 			for (int i = 0; i < 2; i++) {
 				// read magic number: 0xd9b4bef9

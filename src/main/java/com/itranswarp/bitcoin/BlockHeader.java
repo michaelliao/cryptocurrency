@@ -3,7 +3,7 @@ package com.itranswarp.bitcoin;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinInput;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 import com.itranswarp.cryptocurrency.common.TimestampSerializer;
 
@@ -22,7 +22,7 @@ public class BlockHeader {
 	long nonce; // uint32, The nonce used to generate this block… to allow
 				// variations of the header and compute different hashes
 
-	public BlockHeader(BitCoinBlockDataInput input) throws IOException {
+	public BlockHeader(BitCoinInput input) throws IOException {
 		this.version = input.readInt();
 		this.prevHash = input.readBytes(32);
 		this.merkleHash = input.readBytes(32);

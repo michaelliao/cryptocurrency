@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
+import com.itranswarp.bitcoin.io.BitCoinInput;
 
 public class ScriptParser {
 
@@ -15,7 +15,7 @@ public class ScriptParser {
 	 * Parse BitCoin script: https://en.bitcoin.it/wiki/Script
 	 */
 	public String parse(byte[] script) {
-		try (BitCoinBlockDataInput input = new BitCoinBlockDataInput(new ByteArrayInputStream(script))) {
+		try (BitCoinInput input = new BitCoinInput(new ByteArrayInputStream(script))) {
 			List<String> list = new ArrayList<>();
 			int n;
 			while ((n = input.read()) != (-1)) {

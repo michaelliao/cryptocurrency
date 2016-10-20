@@ -1,12 +1,9 @@
 package com.itranswarp.bitcoin.message;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 import org.bouncycastle.util.Arrays;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
+import com.itranswarp.bitcoin.io.BitCoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 
 /**
@@ -15,38 +12,25 @@ import com.itranswarp.cryptocurrency.common.Hash;
  * 
  * @author liaoxuefeng
  */
-public class Message {
+public abstract class Message {
 
 	byte[] command;
 
-	byte[] payload;
-
-	public Message(String cmd, byte[] payload) {
-		if (payload == null || payload.length == 0) {
-			throw new IllegalArgumentException("Bad payload");
-		}
+	public Message(String cmd) {
 		this.command = getCommandBytes(cmd);
-		this.payload = payload;
 	}
 
-	public byte[] getBody() {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(buffer)) {
-			// magic: uint32_t
-			output.writeInt(BitcoinConstants.MAGIC);
-			// command: char[12]
-			output.write(this.command);
-			// length: uint32_t
-			output.writeInt(this.payload.length);
-			// checksum: uint32_t
-			output.write(getCheckSum(this.payload));
-			// payload:
-			output.write(this.payload);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		return buffer.toByteArray();
+	public byte[] toByteArray() {
+		byte[] payload = getPayload();
+		return new BitCoinOutput().writeInt(BitcoinConstants.MAGIC) // magic
+				.write(this.command) // command: char[12]
+				.writeInt(payload.length) // length: uint32_t
+				.write(getCheckSum(payload)) // checksum: uint32_t
+				.write(payload) // payload:
+				.toByteArray();
 	}
+
+	protected abstract byte[] getPayload();
 
 	byte[] getCommandBytes(String cmd) {
 		byte[] cmdBytes = cmd.getBytes();

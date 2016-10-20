@@ -1,11 +1,10 @@
 package com.itranswarp.bitcoin;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
+import com.itranswarp.bitcoin.io.BitCoinInput;
+import com.itranswarp.bitcoin.io.BitCoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 import com.itranswarp.cryptocurrency.common.LockTimeSerializer;
@@ -29,7 +28,7 @@ public class Transaction {
 	// lock_time is irrelevant. Otherwise, the transaction may not be added to a
 	// block until after lock_time (see NLockTime).
 
-	public Transaction(BitCoinBlockDataInput input) throws IOException {
+	public Transaction(BitCoinInput input) throws IOException {
 		this.version = input.readInt();
 		this.tx_in_count = input.readVarInt();
 		this.tx_ins = new TxIn[(int) this.tx_in_count];
@@ -46,28 +45,20 @@ public class Transaction {
 
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getHash() {
-		byte[] buffer = null;
-		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
-			this.dump(output);
-			buffer = byteOutput.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		return Hash.doubleSha256(buffer);
+		return Hash.doubleSha256(this.toByteArray());
 	}
 
-	public void dump(BitCoinBlockDataOutput output) throws IOException {
-		output.writeInt(version);
-		output.writeVarInt(tx_in_count);
+	public byte[] toByteArray() {
+		BitCoinOutput buffer = new BitCoinOutput().writeInt(version).writeVarInt(tx_in_count);
 		for (int i = 0; i < tx_ins.length; i++) {
-			tx_ins[i].dump(output);
+			buffer.write(tx_ins[i].toByteArray());
 		}
-		output.writeVarInt(tx_out_count);
+		buffer.writeVarInt(tx_out_count);
 		for (int i = 0; i < tx_outs.length; i++) {
-			tx_outs[i].dump(output);
+			buffer.write(tx_outs[i].toByteArray());
 		}
-		output.writeUnsignedInt(lock_time);
+		buffer.writeUnsignedInt(lock_time);
+		return buffer.toByteArray();
 	}
 
 	public int getVersion() {

@@ -1,11 +1,10 @@
 package com.itranswarp.bitcoin;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataInput;
-import com.itranswarp.bitcoin.io.BitCoinBlockDataOutput;
+import com.itranswarp.bitcoin.io.BitCoinInput;
+import com.itranswarp.bitcoin.io.BitCoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 
@@ -18,7 +17,7 @@ public class Block {
 	public Block() {
 	}
 
-	public Block(BitCoinBlockDataInput input) throws IOException {
+	public Block(BitCoinInput input) throws IOException {
 		// read block size:
 		this.size = input.readInt();
 		this.blockHeader = new BlockHeader(input);
@@ -63,19 +62,11 @@ public class Block {
 	 */
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getBlockHash() {
-		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
-			BlockHeader hdr = this.getBlockHeader();
-			output.writeInt(hdr.getVersion());
-			output.write(hdr.getPrevHash());
-			output.write(getMerkleRoot());
-			output.writeUnsignedInt(hdr.getTimestamp());
-			output.writeUnsignedInt(hdr.getBits());
-			output.writeUnsignedInt(hdr.getNonce());
-			return Hash.doubleSha256(byteOutput.toByteArray());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		BlockHeader hdr = this.getBlockHeader();
+		byte[] data = new BitCoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
+				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).writeUnsignedInt(hdr.getNonce())
+				.toByteArray();
+		return Hash.doubleSha256(data);
 	}
 
 	/**
@@ -85,17 +76,8 @@ public class Block {
 		System.out.println("Calculate nonce...");
 		BlockHeader hdr = this.getBlockHeader();
 		int zeros = 3;
-		ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-		try (BitCoinBlockDataOutput output = new BitCoinBlockDataOutput(byteOutput)) {
-			output.writeInt(hdr.getVersion());
-			output.write(hdr.getPrevHash());
-			output.write(getMerkleRoot());
-			output.writeUnsignedInt(hdr.getTimestamp());
-			output.writeUnsignedInt(hdr.getBits());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		byte[] prefix = byteOutput.toByteArray();
+		byte[] prefix = new BitCoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
+				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).toByteArray();
 		long nonce = (-1);
 		byte[] blockHash = null;
 		long startTime = System.currentTimeMillis();

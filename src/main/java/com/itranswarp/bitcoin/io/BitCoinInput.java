@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public final class BitCoinBlockDataInput implements AutoCloseable {
+public final class BitCoinInput implements AutoCloseable {
 
-	private InputStream in;
+	final InputStream in;
 
-	public BitCoinBlockDataInput(InputStream in) {
+	public BitCoinInput(InputStream in) {
 		this.in = in;
 	}
 

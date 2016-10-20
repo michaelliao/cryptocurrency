@@ -1,14 +1,19 @@
 package com.itranswarp.bitcoin.io;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.itranswarp.bitcoin.message.VersionMessage;
 import com.itranswarp.cryptocurrency.common.Discover;
 
 /**
@@ -50,6 +55,21 @@ public class BitCoinPeerDiscover implements Discover {
 		for (String node : nodes) {
 			log.info("Found node: " + node);
 		}
-		
+		for (String node : nodes) {
+			log.info("Try connect to node: " + node);
+			try (Socket sock = new Socket(node, 8333)) {
+				try (InputStream input = sock.getInputStream()) {
+					try (OutputStream output = sock.getOutputStream()) {
+						output.write(new VersionMessage().toByteArray());
+						byte[] buffer = new byte[1024];
+						int n = input.read(buffer);
+						System.out.println("read " + n);
+						break;
+					}
+				}
+			} catch (ConnectException e) {
+				// ignore
+			}
+		}
 	}
 }
