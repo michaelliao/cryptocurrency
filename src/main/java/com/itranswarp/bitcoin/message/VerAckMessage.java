@@ -18,4 +18,10 @@ public class VerAckMessage extends Message {
 	protected byte[] getPayload() {
 		return new byte[0];
 	}
+
+	@Override
+	public String toString() {
+		return "VerAckMessage()";
+	}
+
 }

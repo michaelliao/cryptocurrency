@@ -18,4 +18,5 @@ public class UnknownMessage extends Message {
 	protected byte[] getPayload() {
 		return this.payload;
 	}
+
 }

@@ -39,6 +39,27 @@ public abstract class Message {
 
 	protected abstract byte[] getPayload();
 
+	@Override
+	public String toString() {
+		return "Message(command=" + getCommandFrom(this.command) + ")";
+	}
+
+	static String getCommandFrom(byte[] cmd) {
+		int n = cmd.length - 1;
+		while (n >= 0) {
+			if (cmd[n] == 0) {
+				n--;
+			} else {
+				break;
+			}
+		}
+		if (n <= 0) {
+			throw new BitcoinException("Bad command bytes.");
+		}
+		byte[] b = Arrays.copyOfRange(cmd, 0, n + 1);
+		return new String(b, StandardCharsets.UTF_8);
+	}
+
 	static byte[] getCommandBytes(String cmd) {
 		byte[] cmdBytes = cmd.getBytes();
 		if (cmdBytes.length < 1 || cmdBytes.length > 12) {
@@ -62,6 +83,8 @@ public abstract class Message {
 			Map<String, Class<?>> map = new HashMap<>();
 			map.put("version", VersionMessage.class);
 			map.put("verack", VerAckMessage.class);
+			map.put("ping", PingMessage.class);
+			map.put("pong", PongMessage.class);
 			return map;
 		}
 
@@ -96,22 +119,5 @@ public abstract class Message {
 				throw new RuntimeException(e);
 			}
 		}
-
-		private static String getCommandFrom(byte[] cmd) {
-			int n = cmd.length - 1;
-			while (n >= 0) {
-				if (cmd[n] == 0) {
-					n--;
-				} else {
-					break;
-				}
-			}
-			if (n <= 0) {
-				throw new BitcoinException("Bad command bytes.");
-			}
-			byte[] b = Arrays.copyOfRange(cmd, 0, n + 1);
-			return new String(b, StandardCharsets.UTF_8);
-		}
-
 	}
 }

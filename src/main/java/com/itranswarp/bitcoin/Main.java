@@ -1,8 +1,6 @@
 package com.itranswarp.bitcoin;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -13,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.cryptocurrency.common.Hash;
 
 public class Main {

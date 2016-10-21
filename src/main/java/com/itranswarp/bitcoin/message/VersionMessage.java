@@ -67,6 +67,7 @@ public class VersionMessage extends Message {
 		this.relay = true;
 	}
 
+	@Override
 	protected byte[] getPayload() {
 		BitcoinOutput output = new BitcoinOutput();
 		output.writeInt(this.protocolVersion) // protocol
@@ -83,5 +84,10 @@ public class VersionMessage extends Message {
 			}
 		}
 		return output.toByteArray();
+	}
+
+	@Override
+	public String toString() {
+		return "VersionMessage(protocol=" + this.protocolVersion + ", timestamp=" + this.timestamp + ")";
 	}
 }
