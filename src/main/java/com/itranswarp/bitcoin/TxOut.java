@@ -3,8 +3,8 @@ package com.itranswarp.bitcoin;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.cryptocurrency.common.SatoshiSerializer;
 import com.itranswarp.cryptocurrency.common.ScriptParser;
 
@@ -17,7 +17,7 @@ public class TxOut {
 
 	String address;
 
-	public TxOut(BitCoinInput input) throws IOException {
+	public TxOut(BitcoinInput input) throws IOException {
 		this.value = input.readLong();
 		this.scriptLength = input.readVarInt();
 		this.pk_script = input.readBytes((int) scriptLength);
@@ -51,6 +51,6 @@ public class TxOut {
 	}
 
 	public byte[] toByteArray() {
-		return new BitCoinOutput().writeLong(value).writeVarInt(this.scriptLength).write(pk_script).toByteArray();
+		return new BitcoinOutput().writeLong(value).writeVarInt(this.scriptLength).write(pk_script).toByteArray();
 	}
 }

@@ -2,8 +2,8 @@ package com.itranswarp.bitcoin;
 
 import java.io.IOException;
 
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 
 public class OutPoint {
 
@@ -11,7 +11,7 @@ public class OutPoint {
 	long index; // uint32, the index of the specific output in the transaction.
 				// The first output is 0, etc.
 
-	public OutPoint(BitCoinInput input) throws IOException {
+	public OutPoint(BitcoinInput input) throws IOException {
 		this.hash = input.readBytes(32);
 		this.index = input.readUnsignedInt();
 	}
@@ -33,6 +33,6 @@ public class OutPoint {
 	}
 
 	public byte[] toByteArray() {
-		return new BitCoinOutput().write(hash).writeUnsignedInt(index).toByteArray();
+		return new BitcoinOutput().write(hash).writeUnsignedInt(index).toByteArray();
 	}
 }

@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
+import com.itranswarp.bitcoin.message.Message;
 import com.itranswarp.bitcoin.message.VersionMessage;
 import com.itranswarp.cryptocurrency.common.Discover;
 import com.itranswarp.cryptocurrency.common.Hash;
@@ -26,9 +27,9 @@ import com.itranswarp.cryptocurrency.common.Hash;
  * 
  * @author liaoxuefeng
  */
-public class BitCoinPeerDiscover implements Discover {
+public class BitcoinPeerDiscover implements Discover {
 
-	static Log log = LogFactory.getLog(BitCoinPeerDiscover.class);
+	static Log log = LogFactory.getLog(BitcoinPeerDiscover.class);
 
 	// https://en.bitcoin.it/wiki/Satoshi_Client_Node_Discovery#DNS_Addresses
 	static final String[] DNS_SEEDS = { "bitseed.xf2.org", "dnsseed.bluematt.me", "seed.bitcoin.sipa.be",
@@ -55,7 +56,7 @@ public class BitCoinPeerDiscover implements Discover {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String[] nodes = new BitCoinPeerDiscover().lookup();
+		String[] nodes = new BitcoinPeerDiscover().lookup();
 		for (String node : nodes) {
 			log.info("Found node: " + node);
 		}
@@ -65,18 +66,16 @@ public class BitCoinPeerDiscover implements Discover {
 				sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 5000);
 				try (InputStream input = sock.getInputStream()) {
 					try (OutputStream output = sock.getOutputStream()) {
-						VersionMessage msg = new VersionMessage(0, sock.getInetAddress());
-						byte[] msgData = msg.toByteArray();
+						VersionMessage vmsg = new VersionMessage(0, sock.getInetAddress());
+						byte[] msgData = vmsg.toByteArray();
 						log.info("VERSION MESSAGE: " + Hash.toHexString(msgData, true));
 						output.write(msgData);
-						byte[] buffer = new byte[1024];
-						int n = input.read(buffer);
-						if (n > 0) {
-							log.info("RESP: " + Hash.toHexString(buffer, true));
-							VersionMessage ver = new VersionMessage(Arrays.copyOfRange(buffer, 0, n));
-
+						// receive msg:
+						while (true) {
+							BitcoinInput in = new BitcoinInput(input);
+							Message msg = Message.Builder.parseMessage(in);
+							log.info("MSG: " + msg);
 						}
-						break;
 					}
 				}
 			} catch (SocketTimeoutException | ConnectException e) {

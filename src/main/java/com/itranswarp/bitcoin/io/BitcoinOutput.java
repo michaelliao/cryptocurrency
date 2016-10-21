@@ -4,15 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-public final class BitCoinOutput {
+public final class BitcoinOutput {
 
 	ByteArrayOutputStream out;
 
-	public BitCoinOutput() {
+	public BitcoinOutput() {
 		this.out = new ByteArrayOutputStream(1024);
 	}
 
-	public BitCoinOutput write(byte[] bytes) {
+	public BitcoinOutput write(byte[] bytes) {
 		try {
 			out.write(bytes);
 		} catch (IOException e) {
@@ -21,18 +21,18 @@ public final class BitCoinOutput {
 		return this;
 	}
 
-	public BitCoinOutput writeByte(int v) {
+	public BitcoinOutput writeByte(int v) {
 		out.write(v);
 		return this;
 	}
 
-	public BitCoinOutput writeShort(short v) {
+	public BitcoinOutput writeShort(short v) {
 		out.write(0xff & v);
 		out.write(0xff & (v >> 8));
 		return this;
 	}
 
-	public BitCoinOutput writeInt(int v) {
+	public BitcoinOutput writeInt(int v) {
 		out.write(0xff & v);
 		out.write(0xff & (v >> 8));
 		out.write(0xff & (v >> 16));
@@ -40,7 +40,7 @@ public final class BitCoinOutput {
 		return this;
 	}
 
-	public BitCoinOutput writeLong(long v) {
+	public BitcoinOutput writeLong(long v) {
 		out.write((int) (0xff & v));
 		out.write((int) (0xff & (v >> 8)));
 		out.write((int) (0xff & (v >> 16)));
@@ -52,7 +52,7 @@ public final class BitCoinOutput {
 		return this;
 	}
 
-	public BitCoinOutput writeVarInt(long n) {
+	public BitcoinOutput writeVarInt(long n) {
 		if (n < 0xfd) {
 			writeByte((int) n);
 		} else if (n <= 0xffff) {
@@ -69,19 +69,19 @@ public final class BitCoinOutput {
 		return this;
 	}
 
-	public BitCoinOutput writeUnsignedInt(long ln) {
+	public BitcoinOutput writeUnsignedInt(long ln) {
 		int n = (int) (0xffffffff & ln);
 		writeInt(n);
 		return this;
 	}
 
-	public BitCoinOutput writeUnsignedShort(int i) {
+	public BitcoinOutput writeUnsignedShort(int i) {
 		short n = (short) (0xffff & i);
 		writeShort(n);
 		return this;
 	}
 
-	public BitCoinOutput writeString(String str) {
+	public BitcoinOutput writeString(String str) {
 		byte[] bs = str.getBytes(StandardCharsets.UTF_8);
 		writeVarInt(bs.length);
 		write(bs);

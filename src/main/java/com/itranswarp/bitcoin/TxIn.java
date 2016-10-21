@@ -2,8 +2,8 @@ package com.itranswarp.bitcoin;
 
 import java.io.IOException;
 
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 
 public class TxIn {
 
@@ -14,7 +14,7 @@ public class TxIn {
 					// Intended for "replacement" of transactions when
 					// information is updated before inclusion into a block.
 
-	public TxIn(BitCoinInput input) throws IOException {
+	public TxIn(BitcoinInput input) throws IOException {
 		this.previousOutput = new OutPoint(input);
 		this.signatureLength = input.readVarInt();
 		this.signature = input.readBytes((int) signatureLength);
@@ -50,7 +50,7 @@ public class TxIn {
 	}
 
 	public byte[] toByteArray() {
-		return new BitCoinOutput().write(this.previousOutput.toByteArray()).writeVarInt(this.signatureLength)
+		return new BitcoinOutput().write(this.previousOutput.toByteArray()).writeVarInt(this.signatureLength)
 				.write(this.signature).writeUnsignedInt(this.sequence).toByteArray();
 	}
 

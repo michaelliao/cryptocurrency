@@ -6,15 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public final class BitCoinInput implements AutoCloseable {
+public final class BitcoinInput implements AutoCloseable {
 
 	final InputStream in;
 
-	public BitCoinInput(InputStream in) {
+	public BitcoinInput(InputStream in) {
 		this.in = in;
 	}
 
-	public BitCoinInput(byte[] data) {
+	public BitcoinInput(byte[] data) {
 		this.in = new ByteArrayInputStream(data);
 	}
 

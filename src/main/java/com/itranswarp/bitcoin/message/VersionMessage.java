@@ -1,13 +1,13 @@
 package com.itranswarp.bitcoin.message;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Instant;
-import java.util.Arrays;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.util.NetworkUtils;
 
 /**
@@ -19,34 +19,69 @@ import com.itranswarp.bitcoin.util.NetworkUtils;
 public class VersionMessage extends Message {
 
 	int protocolVersion;
-	int lastBlock;
-	InetAddress toAddr;
+	long services;
+	long timestamp;
 
-	public static VersionMessage parse(BitCoinInput input) throws IOException {
-		byte[] payload = Message.parsePayload("version", input);
-		return null;
+	NetworkAddress recipientAddress;
+	NetworkAddress senderAddress;
+
+	long nonce;
+	String subVersion;
+
+	int lastBlock;
+	boolean relay;
+
+	public VersionMessage(byte[] payload) throws IOException {
+		super("version");
+		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(payload))) {
+			this.protocolVersion = input.readInt();
+			this.services = input.readLong();
+			this.timestamp = input.readLong();
+			this.recipientAddress = NetworkAddress.parse(input, true);
+			if (this.protocolVersion >= 106) {
+				this.senderAddress = NetworkAddress.parse(input, true);
+				this.nonce = input.readLong();
+				this.subVersion = input.readString();
+				this.lastBlock = input.readInt();
+				if (this.protocolVersion >= 70001) {
+					this.relay = input.readByte() != 0;
+				}
+			}
+		}
 	}
 
 	public VersionMessage() {
 		super("version");
 	}
 
-	public VersionMessage(int lastBlock, InetAddress toAddr) {
+	public VersionMessage(int lastBlock, InetAddress recipientAddr) {
 		super("version");
 		this.protocolVersion = BitcoinConstants.PROTOCOL_VERSION;
+		this.services = BitcoinConstants.NETWORK_SERVICES;
+		this.timestamp = Instant.now().getEpochSecond();
+		this.recipientAddress = new NetworkAddress(recipientAddr);
+		this.senderAddress = new NetworkAddress(NetworkUtils.getLocalInetAddress());
+		this.nonce = BitcoinConstants.NODE_ID;
+		this.subVersion = BitcoinConstants.SUB_VERSION;
 		this.lastBlock = lastBlock;
-		this.toAddr = toAddr;
+		this.relay = true;
 	}
 
 	protected byte[] getPayload() {
-		return new BitCoinOutput().writeInt(this.protocolVersion) // protocol
-				.writeLong(BitcoinConstants.NETWORK_SERVICES) // services
-				.writeLong(Instant.now().getEpochSecond()) // timestamp
-				.write(new NetworkAddress(this.toAddr).toByteArray(true)) // recipient-address
-				.write(new NetworkAddress(NetworkUtils.getLocalInetAddress()).toByteArray(true)) // sender-address
-				.writeLong(BitcoinConstants.NODE_ID) // nodeId
-				.writeString("/Satoshi:0.7.2/") // sub-version-string
-				.writeInt(this.lastBlock) // # of last block
-				.toByteArray();
+		BitcoinOutput output = new BitcoinOutput();
+		output.writeInt(this.protocolVersion) // protocol
+				.writeLong(this.services) // services
+				.writeLong(timestamp) // timestamp
+				.write(this.recipientAddress.toByteArray(true)); // recipient-address
+		if (this.protocolVersion >= 106) {
+			output.write(this.senderAddress.toByteArray(true)) // sender-address
+					.writeLong(this.nonce) // nodeId
+					.writeString(this.subVersion) // sub-version-string
+					.writeInt(this.lastBlock); // # of last block
+			if (this.protocolVersion >= 70001) {
+				output.writeByte(1);
+			}
+		}
+		return output.toByteArray();
 	}
 }

@@ -1,13 +1,16 @@
 package com.itranswarp.bitcoin.message;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.BitcoinException;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 
 /**
@@ -26,7 +29,7 @@ public abstract class Message {
 
 	public byte[] toByteArray() {
 		byte[] payload = getPayload();
-		return new BitCoinOutput().writeInt(BitcoinConstants.MAGIC) // magic
+		return new BitcoinOutput().writeInt(BitcoinConstants.MAGIC) // magic
 				.write(this.command) // command: char[12]
 				.writeInt(payload.length) // length: uint32_t
 				.write(getCheckSum(payload)) // checksum: uint32_t
@@ -34,49 +37,7 @@ public abstract class Message {
 				.toByteArray();
 	}
 
-	/**
-	 * Parse stream as expected command message, and return payload.
-	 */
-	public static byte[] parsePayload(String command, BitCoinInput input) throws IOException {
-		if (input.readInt() != BitcoinConstants.MAGIC) {
-			throw new BitcoinException("Bad magic.");
-		}
-		byte[] cmd = new byte[12];
-		input.readFully(cmd);
-		String actualCommand = getCommandFrom(cmd);
-		if (!command.equals(actualCommand)) {
-			throw new BitcoinException("Unexpected command: expect " + command + " but actual " + actualCommand);
-		}
-		int payloadLength = input.readInt();
-		byte[] expectedChecksum = new byte[4];
-		input.readFully(expectedChecksum);
-		byte[] payload = new byte[payloadLength];
-		input.readFully(payload);
-		// check:
-		byte[] actualChecksum = getCheckSum(payload);
-		if (!Arrays.equals(expectedChecksum, actualChecksum)) {
-			throw new BitcoinException("Checksum failed.");
-		}
-		return payload;
-	}
-
 	protected abstract byte[] getPayload();
-
-	static String getCommandFrom(byte[] cmd) {
-		int n = cmd.length - 1;
-		while (n >= 0) {
-			if (cmd[n] == 0) {
-				n--;
-			} else {
-				break;
-			}
-		}
-		if (n <= 0) {
-			throw new BitcoinException("Bad command bytes.");
-		}
-		byte[] b = Arrays.copyOfRange(cmd, 0, n);
-		return new String(b, StandardCharsets.UTF_8);
-	}
 
 	static byte[] getCommandBytes(String cmd) {
 		byte[] cmdBytes = cmd.getBytes();
@@ -91,5 +52,66 @@ public abstract class Message {
 	static byte[] getCheckSum(byte[] payload) {
 		byte[] hash = Hash.doubleSha256(payload);
 		return Arrays.copyOfRange(hash, 0, 4);
+	}
+
+	public static class Builder {
+
+		static final Map<String, Class<?>> msgMap = initMessages();
+
+		private static Map<String, Class<?>> initMessages() {
+			Map<String, Class<?>> map = new HashMap<>();
+			map.put("version", VersionMessage.class);
+			map.put("verack", VerAckMessage.class);
+			return map;
+		}
+
+		/**
+		 * Parse stream as message.
+		 */
+		@SuppressWarnings("unchecked")
+		public static <T extends Message> T parseMessage(BitcoinInput input) throws IOException {
+			if (input.readInt() != BitcoinConstants.MAGIC) {
+				throw new BitcoinException("Bad magic.");
+			}
+			String command = getCommandFrom(input.readBytes(12));
+			int payloadLength = input.readInt();
+			byte[] expectedChecksum = new byte[4];
+			input.readFully(expectedChecksum);
+			byte[] payload = new byte[payloadLength];
+			input.readFully(payload);
+			// check:
+			byte[] actualChecksum = getCheckSum(payload);
+			if (!Arrays.equals(expectedChecksum, actualChecksum)) {
+				throw new BitcoinException("Checksum failed.");
+			}
+			// build msg:
+			Class<?> msgClass = msgMap.get(command);
+			if (msgClass == null) {
+				return (T) new UnknownMessage(command, payload);
+			}
+			try {
+				Constructor<?> constructor = msgClass.getConstructor(byte[].class);
+				return (T) constructor.newInstance(payload);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private static String getCommandFrom(byte[] cmd) {
+			int n = cmd.length - 1;
+			while (n >= 0) {
+				if (cmd[n] == 0) {
+					n--;
+				} else {
+					break;
+				}
+			}
+			if (n <= 0) {
+				throw new BitcoinException("Bad command bytes.");
+			}
+			byte[] b = Arrays.copyOfRange(cmd, 0, n + 1);
+			return new String(b, StandardCharsets.UTF_8);
+		}
+
 	}
 }

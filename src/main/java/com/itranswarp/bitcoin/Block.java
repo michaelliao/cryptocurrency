@@ -3,8 +3,8 @@ package com.itranswarp.bitcoin;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 
@@ -17,7 +17,7 @@ public class Block {
 	public Block() {
 	}
 
-	public Block(BitCoinInput input) throws IOException {
+	public Block(BitcoinInput input) throws IOException {
 		// read block size:
 		this.size = input.readInt();
 		this.blockHeader = new BlockHeader(input);
@@ -63,7 +63,7 @@ public class Block {
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getBlockHash() {
 		BlockHeader hdr = this.getBlockHeader();
-		byte[] data = new BitCoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
+		byte[] data = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
 				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).writeUnsignedInt(hdr.getNonce())
 				.toByteArray();
 		return Hash.doubleSha256(data);
@@ -76,7 +76,7 @@ public class Block {
 		System.out.println("Calculate nonce...");
 		BlockHeader hdr = this.getBlockHeader();
 		int zeros = 3;
-		byte[] prefix = new BitCoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
+		byte[] prefix = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
 				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).toByteArray();
 		long nonce = (-1);
 		byte[] blockHash = null;

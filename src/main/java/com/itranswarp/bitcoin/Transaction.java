@@ -3,8 +3,8 @@ package com.itranswarp.bitcoin;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 import com.itranswarp.cryptocurrency.common.LockTimeSerializer;
@@ -28,7 +28,7 @@ public class Transaction {
 	// lock_time is irrelevant. Otherwise, the transaction may not be added to a
 	// block until after lock_time (see NLockTime).
 
-	public Transaction(BitCoinInput input) throws IOException {
+	public Transaction(BitcoinInput input) throws IOException {
 		this.version = input.readInt();
 		this.tx_in_count = input.readVarInt();
 		this.tx_ins = new TxIn[(int) this.tx_in_count];
@@ -49,7 +49,7 @@ public class Transaction {
 	}
 
 	public byte[] toByteArray() {
-		BitCoinOutput buffer = new BitCoinOutput().writeInt(version).writeVarInt(tx_in_count);
+		BitcoinOutput buffer = new BitcoinOutput().writeInt(version).writeVarInt(tx_in_count);
 		for (int i = 0; i < tx_ins.length; i++) {
 			buffer.write(tx_ins[i].toByteArray());
 		}

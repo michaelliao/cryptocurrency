@@ -5,8 +5,8 @@ import java.net.InetAddress;
 import java.time.Instant;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
-import com.itranswarp.bitcoin.io.BitCoinInput;
-import com.itranswarp.bitcoin.io.BitCoinOutput;
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.util.NetworkUtils;
 
 public class NetworkAddress {
@@ -19,7 +19,7 @@ public class NetworkAddress {
 	// followed by the 4 bytes of the IPv4 address
 	int port; // uint16, port number
 
-	public NetworkAddress(BitCoinInput input) throws IOException {
+	public NetworkAddress(BitcoinInput input) throws IOException {
 		this.time = input.readUnsignedInt();
 		this.services = input.readLong();
 		this.ipv6 = input.readBytes(16);
@@ -27,10 +27,6 @@ public class NetworkAddress {
 	}
 
 	public NetworkAddress() {
-		this.time = Instant.now().getEpochSecond();
-		this.services = 1;
-		this.ipv6 = NetworkUtils.getIPv6(NetworkUtils.getLocalInetAddress());
-		this.port = BitcoinConstants.PORT;
 	}
 
 	public NetworkAddress(InetAddress addr) {
@@ -41,14 +37,25 @@ public class NetworkAddress {
 	}
 
 	public byte[] toByteArray(boolean excludeTime) {
-		BitCoinOutput output = new BitCoinOutput();
+		BitcoinOutput output = new BitcoinOutput();
 		if (!excludeTime) {
-			output.writeUnsignedInt(time); // time
+			output.writeUnsignedInt(this.time); // time
 		}
 		output.writeLong(this.services) // service
 				.write(this.ipv6) // ipv6
 				.writeUnsignedShort(this.port); // port
 		return output.toByteArray();
+	}
+
+	public static NetworkAddress parse(BitcoinInput input, boolean excludeTime) throws IOException {
+		NetworkAddress addr = new NetworkAddress();
+		if (!excludeTime) {
+			addr.time = input.readUnsignedInt();
+		}
+		addr.services = input.readLong();
+		addr.ipv6 = input.readBytes(16);
+		addr.port = input.readUnsignedShort();
+		return addr;
 	}
 
 }
