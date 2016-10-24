@@ -17,6 +17,8 @@ import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.message.Message;
+import com.itranswarp.bitcoin.message.PingMessage;
+import com.itranswarp.bitcoin.message.PongMessage;
 import com.itranswarp.bitcoin.message.VersionMessage;
 import com.itranswarp.cryptocurrency.common.Discover;
 import com.itranswarp.cryptocurrency.common.Hash;
@@ -67,14 +69,17 @@ public class BitcoinPeerDiscover implements Discover {
 				try (InputStream input = sock.getInputStream()) {
 					try (OutputStream output = sock.getOutputStream()) {
 						VersionMessage vmsg = new VersionMessage(0, sock.getInetAddress());
-						byte[] msgData = vmsg.toByteArray();
-						log.info("VERSION MESSAGE: " + Hash.toHexString(msgData, true));
-						output.write(msgData);
+						log.info(":=> " + vmsg);
+						output.write(vmsg.toByteArray());
 						// receive msg:
 						while (true) {
 							BitcoinInput in = new BitcoinInput(input);
 							Message msg = Message.Builder.parseMessage(in);
-							log.info("MSG: " + msg);
+							log.info("<=: " + msg);
+							Message resp = handleMessage(msg);
+							if (resp != null) {
+								output.write(resp.toByteArray());
+							}
 						}
 					}
 				}
@@ -82,5 +87,12 @@ public class BitcoinPeerDiscover implements Discover {
 				// ignore
 			}
 		}
+	}
+
+	private static Message handleMessage(Message msg) {
+		if (msg instanceof PingMessage) {
+			return new PongMessage(((PingMessage) msg).getNonce());
+		}
+		return null;
 	}
 }

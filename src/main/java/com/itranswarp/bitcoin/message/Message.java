@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.io.BitcoinInput;
@@ -77,14 +80,18 @@ public abstract class Message {
 
 	public static class Builder {
 
+		static final Log log = LogFactory.getLog(Builder.class);
 		static final Map<String, Class<?>> msgMap = initMessages();
 
 		private static Map<String, Class<?>> initMessages() {
 			Map<String, Class<?>> map = new HashMap<>();
-			map.put("version", VersionMessage.class);
-			map.put("verack", VerAckMessage.class);
+			map.put("addr", AddrMessage.class);
+			map.put("getaddr", GetAddrMessage.class);
+			map.put("getheaders", GetHeadersMessage.class);
 			map.put("ping", PingMessage.class);
 			map.put("pong", PongMessage.class);
+			map.put("verack", VerAckMessage.class);
+			map.put("version", VersionMessage.class);
 			return map;
 		}
 
@@ -107,6 +114,7 @@ public abstract class Message {
 			if (!Arrays.equals(expectedChecksum, actualChecksum)) {
 				throw new BitcoinException("Checksum failed.");
 			}
+			log.info("MSG: " + command + " payload (" + payloadLength + "): " + Hash.toHexString(payload, true));
 			// build msg:
 			Class<?> msgClass = msgMap.get(command);
 			if (msgClass == null) {

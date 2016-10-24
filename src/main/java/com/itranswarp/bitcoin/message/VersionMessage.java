@@ -88,6 +88,7 @@ public class VersionMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "VersionMessage(protocol=" + this.protocolVersion + ", timestamp=" + this.timestamp + ")";
+		return "VersionMessage(lastBlock=" + this.lastBlock + ", protocol=" + this.protocolVersion + ", timestamp="
+				+ this.timestamp + ")";
 	}
 }

@@ -12,6 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
+import org.bouncycastle.util.Arrays;
 
 public class Hash {
 
@@ -35,6 +36,10 @@ public class Hash {
 	}
 
 	static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
+	public static String toReversedHexString(byte[] b) {
+		return toHexString(Arrays.reverse(b), false);
+	}
 
 	public static String toHexString(byte[] b) {
 		return toHexString(b, false);

@@ -19,8 +19,10 @@ public class NetworkAddress {
 	// followed by the 4 bytes of the IPv4 address
 	int port; // uint16, port number
 
-	public NetworkAddress(BitcoinInput input) throws IOException {
-		this.time = input.readUnsignedInt();
+	public NetworkAddress(BitcoinInput input, boolean excludeTime) throws IOException {
+		if (!excludeTime) {
+			this.time = input.readUnsignedInt();
+		}
 		this.services = input.readLong();
 		this.ipv6 = input.readBytes(16);
 		this.port = input.readUnsignedShort();

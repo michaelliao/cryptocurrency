@@ -29,6 +29,10 @@ public class PingMessage extends Message {
 		}
 	}
 
+	public long getNonce() {
+		return this.nonce;
+	}
+
 	@Override
 	protected byte[] getPayload() {
 		return new BitcoinOutput().writeLong(this.nonce).toByteArray();
