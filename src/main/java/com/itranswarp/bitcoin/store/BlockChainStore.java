@@ -1,6 +1,5 @@
 package com.itranswarp.bitcoin.store;
 
-
 public class BlockChainStore {
 
 	public void addBlock() {
@@ -11,7 +10,7 @@ public class BlockChainStore {
 		//
 	}
 
-	public BlockEntity getLatestBlockEntity() {
+	public BlockEntity getLatestBlock() {
 		return null;
 	}
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import org.junit.Before;
@@ -31,22 +32,21 @@ public class DatabaseTest {
 
 	@Test
 	public void testInsert() {
-		TestEntity t = newTestEntity("Bob", null, 0);
+		TestEntity t = newTestEntity("xyz-123", "Bob", null, 0);
 		database.insert(t);
-		assertNotNull(t.id);
+		assertNotNull(t.getId());
 	}
 
 	@Test
 	public void testInsertWithId() {
-		TestEntity t = newTestEntity("Bob", null, 0);
-		t.id = "abc-123";
+		TestEntity t = newTestEntity("abc-123", "Bob", null, 0);
 		database.insert(t);
 		assertEquals("abc-123", t.id);
 	}
 
 	@Test(expected = StoreException.class)
 	public void testInsertMissingNonNullValue() {
-		TestEntity t = newTestEntity(null, "No.1 Street", 100);
+		TestEntity t = newTestEntity("s-123", null, "No.1 Street", 100);
 		database.insert(t);
 	}
 
@@ -54,8 +54,7 @@ public class DatabaseTest {
 	public void testQuery() {
 		TestEntity[] ts = new TestEntity[5];
 		for (int i = 0; i < ts.length; i++) {
-			TestEntity t = newTestEntity("Bob-" + i, "Address-" + i, i * 100);
-			t.id = "p-" + i;
+			TestEntity t = newTestEntity("p-" + i, "Bob-" + i, "Address-" + i, i * 100);
 			ts[i] = t;
 		}
 		database.insert(ts);
@@ -72,7 +71,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testDelete() {
-		TestEntity t = newTestEntity("Bob", null, 0);
+		TestEntity t = newTestEntity("x1234", "Bob", null, 0);
 		database.insert(t);
 		TestEntity t2 = new TestEntity();
 		t2.id = t.id;
@@ -84,8 +83,7 @@ public class DatabaseTest {
 	public void testDeleteBy() {
 		TestEntity[] ts = new TestEntity[5];
 		for (int i = 0; i < ts.length; i++) {
-			TestEntity t = newTestEntity("Bob-" + i, "Address-" + i, i * 100);
-			t.id = "p-" + i;
+			TestEntity t = newTestEntity("p-" + i, "Bob-" + i, "Address-" + i, i * 100);
 			ts[i] = t;
 		}
 		database.insert(ts);
@@ -101,8 +99,9 @@ public class DatabaseTest {
 		conn.close();
 	}
 
-	TestEntity newTestEntity(String name, String address, long balance) {
+	TestEntity newTestEntity(String id, String name, String address, long balance) {
 		TestEntity t = new TestEntity();
+		t.id = id;
 		t.name = name;
 		t.address = address;
 		t.balance = balance;
@@ -112,6 +111,9 @@ public class DatabaseTest {
 
 @Entity
 class TestEntity extends AbstractEntity {
+
+	@Id
+	public String id;
 
 	@Column(length = 100, nullable = false)
 	public String name;
@@ -126,4 +128,9 @@ class TestEntity extends AbstractEntity {
 
 	@Transient
 	public String title;
+
+	@Override
+	public String getId() {
+		return this.id;
+	}
 }

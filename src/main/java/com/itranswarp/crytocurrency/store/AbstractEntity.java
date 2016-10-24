@@ -2,17 +2,12 @@ package com.itranswarp.crytocurrency.store;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class AbstractEntity implements Serializable {
+public abstract class AbstractEntity implements Serializable {
 
-	protected static final int ID_LENGTH = 16;
+	protected static final int HASH32_LENGTH = 64;
 
-	@Id
-	@Column(length = ID_LENGTH)
-	public String id;
-
+	public abstract String getId();
 }

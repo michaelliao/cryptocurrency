@@ -114,7 +114,7 @@ public class Database {
 		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
 			for (T entity : entities) {
 				EntityInfo ei = getEntityInfo(entity.getClass());
-				ctx.executeUpdate(ei.deleteSQL, entity.id);
+				ctx.executeUpdate(ei.deleteSQL, entity.getId());
 			}
 		} catch (RuntimeException e) {
 			throw e;
@@ -233,12 +233,7 @@ class EntityInfo implements RowMapper {
 		Object[] params = new Object[this.properties.size()];
 		int n = 0;
 		for (Property prop : this.properties) {
-			Object value = prop.getValue(entity);
-			if (prop.isId && value == null) {
-				value = IdUtil.nextId();
-				prop.setValue(entity, value);
-			}
-			params[n] = value;
+			params[n] = prop.getValue(entity);
 			n++;
 		}
 		return params;

@@ -26,4 +26,9 @@ public class TxEntity extends AbstractEntity {
 	@Column
 	public long amount;
 
+	@Override
+	public String getId() {
+		return this.txHash;
+	}
+
 }
