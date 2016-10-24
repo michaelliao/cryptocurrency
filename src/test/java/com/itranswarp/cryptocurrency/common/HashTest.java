@@ -32,4 +32,18 @@ public class HashTest {
 		assertEquals("b6a9c8c230722b7c748331a8b450f05566dc7d0f",
 				Hash.toHexString(Hash.ripeMd160(Hash.sha256("hello".getBytes(StandardCharsets.UTF_8)))));
 	}
+
+	@Test
+	public void testHexString() {
+		String s = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+		byte[] data = Hash.toBytes(s);
+		assertEquals(s, Hash.toHexString(data));
+	}
+
+	@Test
+	public void testHexStringAsBigEndian() {
+		String s = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+		byte[] data = Hash.toBytesAsBigEndian(s);
+		assertEquals(s, Hash.toHexStringAsBigEndian(data));
+	}
 }

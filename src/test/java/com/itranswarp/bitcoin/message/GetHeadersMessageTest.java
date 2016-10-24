@@ -19,9 +19,9 @@ public class GetHeadersMessageTest {
 	public void testNewGetHeadersMessageWithPayload() throws IOException {
 		GetHeadersMessage msg = new GetHeadersMessage(DATA);
 		assertNotNull(msg);
-		assertEquals(30, msg.hashCount);
-		for (int i = 0; i < msg.hashCount; i++) {
-			System.out.println(Hash.toReversedHexString(msg.hashes[i]));
+		assertEquals(30, msg.hashes.length);
+		for (int i = 0; i < msg.hashes.length; i++) {
+			System.out.println(Hash.toHexStringAsBigEndian(msg.hashes[i]));
 		}
 		assertEquals("0000000000000000000000000000000000000000000000000000000000000000",
 				Hash.toHexString(msg.hashStop));

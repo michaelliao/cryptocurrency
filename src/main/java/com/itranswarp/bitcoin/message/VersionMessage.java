@@ -11,8 +11,7 @@ import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.util.NetworkUtils;
 
 /**
- * Build P2P message:
- * https://en.bitcoin.it/wiki/Protocol_documentation#Message_structure
+ * VersionMessage sends version info.
  * 
  * @author liaoxuefeng
  */

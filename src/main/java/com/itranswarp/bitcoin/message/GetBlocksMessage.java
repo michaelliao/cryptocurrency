@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.cryptocurrency.common.Hash;
@@ -14,15 +15,22 @@ import com.itranswarp.cryptocurrency.common.Hash;
  * 
  * @author liaoxuefeng
  */
-public class GetHeadersMessage extends Message {
+public class GetBlocksMessage extends Message {
 
 	int version; // uint32
 	byte[][] hashes; // byte[32]
 	byte[] hashStop; // hash of the last desired block header; set to zero to
 						// get as many blocks as possible (2000)
 
-	public GetHeadersMessage(byte[] payload) throws IOException {
-		super("getheaders");
+	public GetBlocksMessage(byte[] firstHash, byte[] hashStop) {
+		super("getblocks");
+		this.version = BitcoinConstants.PROTOCOL_VERSION;
+		this.hashes = new byte[][] { firstHash };
+		this.hashStop = hashStop;
+	}
+
+	public GetBlocksMessage(byte[] payload) throws IOException {
+		super("getblocks");
 		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(payload))) {
 			this.version = input.readInt();
 			long hashCount = input.readVarInt(); // do not keep hash count

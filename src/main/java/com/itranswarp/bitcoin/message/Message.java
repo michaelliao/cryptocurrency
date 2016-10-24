@@ -87,7 +87,9 @@ public abstract class Message {
 			Map<String, Class<?>> map = new HashMap<>();
 			map.put("addr", AddrMessage.class);
 			map.put("getaddr", GetAddrMessage.class);
+			map.put("getblocks", GetBlocksMessage.class);
 			map.put("getheaders", GetHeadersMessage.class);
+			map.put("inv", InvMessage.class);
 			map.put("ping", PingMessage.class);
 			map.put("pong", PongMessage.class);
 			map.put("verack", VerAckMessage.class);

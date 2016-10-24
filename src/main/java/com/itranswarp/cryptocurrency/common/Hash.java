@@ -37,10 +37,6 @@ public class Hash {
 
 	static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
-	public static String toReversedHexString(byte[] b) {
-		return toHexString(Arrays.reverse(b), false);
-	}
-
 	public static String toHexString(byte[] b) {
 		return toHexString(b, false);
 	}
@@ -71,6 +67,40 @@ public class Hash {
 		return sb.toString();
 	}
 
+	public static byte[] toBytesAsBigEndian(String hash) {
+		byte[] r = toBytes(hash);
+		return Arrays.reverse(r);
+	}
+
+	public static byte[] toBytes(String hash) {
+		if (hash.length() % 2 == 1) {
+			throw new IllegalArgumentException("Invalid hash length.");
+		}
+		byte[] data = new byte[hash.length() / 2];
+		for (int i = 0; i < data.length; i++) {
+			char c1 = hash.charAt(2 * i);
+			char c2 = hash.charAt(2 * i + 1);
+			int n1 = char2int(c1);
+			int n2 = char2int(c2);
+			int n = n1 << 4 | n2;
+			data[i] = (byte) n;
+		}
+		return data;
+	}
+
+	static int char2int(char ch) {
+		if (ch >= '0' && ch <= '9') {
+			return ch - '0';
+		}
+		if (ch >= 'a' && ch <= 'f') {
+			return ch - 'a' + 10;
+		}
+		if (ch >= 'A' && ch <= 'F') {
+			return ch - 'A' + 10;
+		}
+		throw new IllegalArgumentException("Bad char.");
+	}
+
 	public static String hmacSha1(String data, String key) {
 		SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA1");
 		Mac mac = null;
@@ -83,4 +113,5 @@ public class Hash {
 		byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 		return Base64.getEncoder().encodeToString(rawHmac);
 	}
+
 }
