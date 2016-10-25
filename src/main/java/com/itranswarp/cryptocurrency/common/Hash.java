@@ -55,7 +55,7 @@ public class Hash {
 		return sb.toString().trim();
 	}
 
-	public static String toHexStringAsBigEndian(byte[] b) {
+	public static String toHexStringAsLittleEndian(byte[] b) {
 		StringBuilder sb = new StringBuilder(b.length << 2);
 		for (int i = b.length - 1; i >= 0; i--) {
 			byte x = b[i];
@@ -67,7 +67,7 @@ public class Hash {
 		return sb.toString();
 	}
 
-	public static byte[] toBytesAsBigEndian(String hash) {
+	public static byte[] toBytesAsLittleEndian(String hash) {
 		byte[] r = toBytes(hash);
 		return Arrays.reverse(r);
 	}

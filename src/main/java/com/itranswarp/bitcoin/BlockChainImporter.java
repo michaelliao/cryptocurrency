@@ -13,11 +13,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.cryptocurrency.common.JsonUtil;
 
 public class BlockChainImporter {
 
@@ -50,8 +47,7 @@ public class BlockChainImporter {
 
 	void importFromFile(File file) throws IOException {
 		log.info("Import blocks from file: " + file.getAbsolutePath() + "...");
-		try (BitcoinInput input = new BitcoinInput(
-				new BufferedInputStream(new FileInputStream(file)))) {
+		try (BitcoinInput input = new BitcoinInput(new BufferedInputStream(new FileInputStream(file)))) {
 			for (int i = 0; i < 2; i++) {
 				// read magic number: 0xd9b4bef9
 				int magic = input.readInt();
@@ -59,25 +55,10 @@ public class BlockChainImporter {
 					throw new RuntimeException("Bad magic number.");
 				}
 				Block block = new Block(input);
-				log.info(toJson(block));
+				log.info(JsonUtil.toJson(block));
 			}
 		} catch (EOFException eof) {
 			// ignore
 		}
-	}
-
-	static String toJson(Object o) throws IOException {
-		return JSON_MAPPER.writeValueAsString(o);
-	}
-
-	static final ObjectMapper JSON_MAPPER;
-
-	static {
-		SimpleModule testModule = new SimpleModule("SimpleModule", Version.unknownVersion());
-		testModule.addSerializer(new ByteArraySerializer());
-		ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				.enable(SerializationFeature.INDENT_OUTPUT);
-		mapper.registerModule(testModule);
-		JSON_MAPPER = mapper;
 	}
 }

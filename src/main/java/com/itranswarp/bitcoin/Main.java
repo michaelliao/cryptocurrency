@@ -1,25 +1,77 @@
 package com.itranswarp.bitcoin;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.itranswarp.cryptocurrency.common.Hash;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.io.BitcoinPeer;
+import com.itranswarp.bitcoin.message.GetBlocksMessage;
+import com.itranswarp.bitcoin.message.InvMessage;
+import com.itranswarp.bitcoin.message.Message;
+import com.itranswarp.bitcoin.message.PingMessage;
+import com.itranswarp.bitcoin.message.PongMessage;
+import com.itranswarp.bitcoin.message.VerAckMessage;
+import com.itranswarp.bitcoin.message.VersionMessage;
 
 public class Main {
 
+	static final Log log = LogFactory.getLog(Main.class);
+
 	public static void main(String[] args) throws Exception {
-		String path = "/Users/liaoxuefeng/Bitcoin/blocks";
-		BlockChainImporter importer = new BlockChainImporter();
+		try (BitcoinPeer peer = new BitcoinPeer()) {
+			for (;;) {
+				String node = peer.getPeer();
+				if (node == null) {
+					Thread.sleep(100);
+				} else {
+					// try connect:
+					log.info("Try connect to node: " + node);
+					try (Socket sock = new Socket()) {
+						sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 3000);
+						try (InputStream input = sock.getInputStream()) {
+							try (OutputStream output = sock.getOutputStream()) {
+								VersionMessage vmsg = new VersionMessage(0, sock.getInetAddress());
+								log.info(":=> " + vmsg);
+								output.write(vmsg.toByteArray());
+								// receive msg:
+								byte[] firstBlock = BitcoinConstants.GENESIS_HASH;
+								while (true) {
+									BitcoinInput in = new BitcoinInput(input);
+									Message msg = Message.Builder.parseMessage(in);
+									log.info("<=: " + msg);
+									Message resp = handleMessage(msg);
+									if (resp != null) {
+										log.info(":=> " + resp);
+										output.write(resp.toByteArray());
+									} else {
+										if (firstBlock != null) {
+											Message blks = new GetBlocksMessage(firstBlock, BitcoinConstants.ZERO_HASH);
+											log.info(":=> " + blks);
+											output.write(blks.toByteArray());
+											firstBlock = null;
+										}
+									}
+								}
+							}
+						}
+					} catch (SocketTimeoutException | SocketException e) {
+						peer.removePeer(node);
+					}
+				}
+			}
+		}
+		// String path = "/Users/liaoxuefeng/Bitcoin/blocks";
+		// BlockChainImporter importer = new BlockChainImporter();
 		// importer.importFromDir(path);
-		importer.importFromFile(new File("/Users/liaoxuefeng/Bitcoin/blocks/blk00000.dat"));
+		// importer.importFromFile(new
+		// File("/Users/liaoxuefeng/Bitcoin/blocks/blk00000.dat"));
 		// try (LittleEndianDataInputStream input = new
 		// LittleEndianDataInputStream(
 		// new BufferedInputStream(new FileInputStream(file)))) {
@@ -29,27 +81,18 @@ public class Main {
 		// }
 	}
 
-	static String toJson(Object o) throws Exception {
-		SimpleModule testModule = new SimpleModule("MyModule", Version.unknownVersion());
-		testModule.addSerializer(new ByteArraySerializer());
-		ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				.enable(SerializationFeature.INDENT_OUTPUT);
-		mapper.registerModule(testModule);
-		return mapper.writeValueAsString(o);
-	}
+	private static Message handleMessage(Message msg) {
+		if (msg instanceof PingMessage) {
+			return new PongMessage(((PingMessage) msg).getNonce());
+		}
+		if (msg instanceof VersionMessage) {
+			return new VerAckMessage();
+		}
+		if (msg instanceof InvMessage) {
+			InvMessage inv = (InvMessage) msg;
+			String[] hashes = inv.getBlockHashes();
 
-}
-
-class ByteArraySerializer extends JsonSerializer<byte[]> {
-
-	@Override
-	public Class<byte[]> handledType() {
-		return byte[].class;
-	}
-
-	@Override
-	public void serialize(byte[] value, JsonGenerator gen, SerializerProvider serializers)
-			throws IOException, JsonProcessingException {
-		gen.writeString(Hash.toHexString(value));
+		}
+		return null;
 	}
 }

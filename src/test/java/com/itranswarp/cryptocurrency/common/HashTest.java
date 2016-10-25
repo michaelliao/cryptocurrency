@@ -43,7 +43,7 @@ public class HashTest {
 	@Test
 	public void testHexStringAsBigEndian() {
 		String s = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-		byte[] data = Hash.toBytesAsBigEndian(s);
-		assertEquals(s, Hash.toHexStringAsBigEndian(data));
+		byte[] data = Hash.toBytesAsLittleEndian(s);
+		assertEquals(s, Hash.toHexStringAsLittleEndian(data));
 	}
 }

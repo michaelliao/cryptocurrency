@@ -48,8 +48,8 @@ public class GetHeadersMessage extends Message {
 	@Override
 	public String toString() {
 		return "GetHeadersMessage([" + String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
-			return Hash.toHexStringAsBigEndian(hash);
-		}).toArray(String[]::new)) + "], hashStop=" + Hash.toHexStringAsBigEndian(this.hashStop) + ")";
+			return Hash.toHexStringAsLittleEndian(hash);
+		}).toArray(String[]::new)) + "], hashStop=" + Hash.toHexStringAsLittleEndian(this.hashStop) + ")";
 	}
 
 }

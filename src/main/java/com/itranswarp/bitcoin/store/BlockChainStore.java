@@ -1,6 +1,6 @@
 package com.itranswarp.bitcoin.store;
 
-public class BlockChainStore {
+public class BlockChainStore implements AutoCloseable {
 
 	public void addBlock() {
 		//
@@ -16,5 +16,11 @@ public class BlockChainStore {
 
 	public long getUtxoAmount() {
 		return 0;
+	}
+
+	@Override
+	public void close() throws Exception {
+		// TODO Auto-generated method stub
+
 	}
 }

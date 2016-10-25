@@ -21,7 +21,7 @@ public class GetHeadersMessageTest {
 		assertNotNull(msg);
 		assertEquals(30, msg.hashes.length);
 		for (int i = 0; i < msg.hashes.length; i++) {
-			System.out.println(Hash.toHexStringAsBigEndian(msg.hashes[i]));
+			System.out.println(Hash.toHexStringAsLittleEndian(msg.hashes[i]));
 		}
 		assertEquals("0000000000000000000000000000000000000000000000000000000000000000",
 				Hash.toHexString(msg.hashStop));

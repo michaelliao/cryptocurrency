@@ -2,7 +2,7 @@ package com.itranswarp.cryptocurrency.common;
 
 import java.io.IOException;
 
-public interface Discover {
+public interface PeerDiscover {
 
 	/**
 	 * Lookup and return at lease one ip address.
