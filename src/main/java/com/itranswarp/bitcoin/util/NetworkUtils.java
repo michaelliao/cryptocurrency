@@ -3,8 +3,6 @@ package com.itranswarp.bitcoin.util;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import com.itranswarp.cryptocurrency.common.Hash;
-
 public class NetworkUtils {
 
 	private static InetAddress local = null;
@@ -32,6 +30,6 @@ public class NetworkUtils {
 			System.arraycopy(ip, 0, ipv6, 12, 4);
 			return ipv6;
 		}
-		throw new RuntimeException("Bad IP: " + Hash.toHexString(ip));
+		throw new RuntimeException("Bad IP: " + HashUtils.toHexString(ip));
 	}
 }

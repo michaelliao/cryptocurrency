@@ -1,4 +1,4 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin.util;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -14,7 +14,7 @@ import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 import org.bouncycastle.util.Arrays;
 
-public class Hash {
+public class HashUtils {
 
 	public static byte[] ripeMd160(byte[] input) {
 		MessageDigest digest = new RIPEMD160.Digest();
@@ -88,19 +88,6 @@ public class Hash {
 		return data;
 	}
 
-	static int char2int(char ch) {
-		if (ch >= '0' && ch <= '9') {
-			return ch - '0';
-		}
-		if (ch >= 'a' && ch <= 'f') {
-			return ch - 'a' + 10;
-		}
-		if (ch >= 'A' && ch <= 'F') {
-			return ch - 'A' + 10;
-		}
-		throw new IllegalArgumentException("Bad char.");
-	}
-
 	public static String hmacSha1(String data, String key) {
 		SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA1");
 		Mac mac = null;
@@ -112,6 +99,19 @@ public class Hash {
 		}
 		byte[] rawHmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
 		return Base64.getEncoder().encodeToString(rawHmac);
+	}
+
+	static int char2int(char ch) {
+		if (ch >= '0' && ch <= '9') {
+			return ch - '0';
+		}
+		if (ch >= 'a' && ch <= 'f') {
+			return ch - 'a' + 10;
+		}
+		if (ch >= 'A' && ch <= 'F') {
+			return ch - 'A' + 10;
+		}
+		throw new IllegalArgumentException("Bad char.");
 	}
 
 }

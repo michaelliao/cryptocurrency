@@ -3,11 +3,11 @@ package com.itranswarp.bitcoin.message;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import com.itranswarp.bitcoin.Transaction;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.struct.Header;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.struct.Transaction;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 /**
  * Build P2P message:
@@ -63,10 +63,10 @@ public class BlockMessage extends Message {
 		int extra = hashes.length % 2;
 		byte[][] results = new byte[count + extra][];
 		for (int i = 0; i < count; i++) {
-			results[i] = Hash.doubleSha256(concat(hashes[2 * i], hashes[2 * i + 1]));
+			results[i] = HashUtils.doubleSha256(concat(hashes[2 * i], hashes[2 * i + 1]));
 		}
 		if (extra == 1) {
-			results[count] = Hash.doubleSha256(concat(hashes[hashes.length - 1], hashes[hashes.length - 1]));
+			results[count] = HashUtils.doubleSha256(concat(hashes[hashes.length - 1], hashes[hashes.length - 1]));
 		}
 		return results;
 	}

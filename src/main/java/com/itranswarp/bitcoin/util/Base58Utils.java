@@ -1,9 +1,9 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin.util;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public class Base58 {
+public class Base58Utils {
 
 	static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
 	static final char ENCODED_ZERO = ALPHABET[0];
@@ -115,7 +115,7 @@ public class Base58 {
 			throw new IllegalArgumentException("Input too short");
 		byte[] data = Arrays.copyOfRange(decoded, 0, decoded.length - 4);
 		byte[] checksum = Arrays.copyOfRange(decoded, decoded.length - 4, decoded.length);
-		byte[] actualChecksum = Arrays.copyOfRange(Hash.doubleSha256(data), 0, 4);
+		byte[] actualChecksum = Arrays.copyOfRange(HashUtils.doubleSha256(data), 0, 4);
 		if (!Arrays.equals(checksum, actualChecksum))
 			throw new IllegalArgumentException("Checksum does not validate");
 		return data;

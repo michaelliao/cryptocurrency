@@ -1,4 +1,4 @@
-package com.itranswarp.bitcoin;
+package com.itranswarp.bitcoin.struct;
 
 import java.io.IOException;
 

@@ -14,7 +14,7 @@ import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 /**
  * P2P message:
@@ -74,7 +74,7 @@ public abstract class Message {
 	}
 
 	static byte[] getCheckSum(byte[] payload) {
-		byte[] hash = Hash.doubleSha256(payload);
+		byte[] hash = HashUtils.doubleSha256(payload);
 		return Arrays.copyOfRange(hash, 0, 4);
 	}
 
@@ -118,7 +118,7 @@ public abstract class Message {
 			if (!Arrays.equals(expectedChecksum, actualChecksum)) {
 				throw new BitcoinException("Checksum failed.");
 			}
-			log.info("MSG: " + command + " payload (" + payloadLength + "): " + Hash.toHexString(payload, true));
+			log.info("MSG: " + command + " payload (" + payloadLength + "): " + HashUtils.toHexString(payload, true));
 			// build msg:
 			Class<?> msgClass = msgMap.get(command);
 			if (msgClass == null) {

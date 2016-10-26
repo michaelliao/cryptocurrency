@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class GetHeadersMessageTest {
 
@@ -21,10 +21,10 @@ public class GetHeadersMessageTest {
 		assertNotNull(msg);
 		assertEquals(30, msg.hashes.length);
 		for (int i = 0; i < msg.hashes.length; i++) {
-			System.out.println(Hash.toHexStringAsLittleEndian(msg.hashes[i]));
+			System.out.println(HashUtils.toHexStringAsLittleEndian(msg.hashes[i]));
 		}
 		assertEquals("0000000000000000000000000000000000000000000000000000000000000000",
-				Hash.toHexString(msg.hashStop));
+				HashUtils.toHexString(msg.hashStop));
 	}
 
 	static final byte[] DATA = { 114, 17, 1, 0, 30, -31, -6, 54, 13, -84, -38, 110, -44, -20, -39, -46, 56, 94, -68,

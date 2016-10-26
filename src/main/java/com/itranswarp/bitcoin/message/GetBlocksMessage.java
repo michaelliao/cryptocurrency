@@ -7,7 +7,7 @@ import java.util.Arrays;
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 /**
  * Build P2P message:
@@ -56,8 +56,8 @@ public class GetBlocksMessage extends Message {
 	@Override
 	public String toString() {
 		return "GetBlocksMessage([" + String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
-			return Hash.toHexStringAsLittleEndian(hash);
-		}).toArray(String[]::new)) + "], hashStop=" + Hash.toHexStringAsLittleEndian(this.hashStop) + ")";
+			return HashUtils.toHexStringAsLittleEndian(hash);
+		}).toArray(String[]::new)) + "], hashStop=" + HashUtils.toHexStringAsLittleEndian(this.hashStop) + ")";
 	}
 
 }

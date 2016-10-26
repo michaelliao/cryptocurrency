@@ -9,8 +9,6 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.itranswarp.cryptocurrency.common.PeerDiscover;
-
 /**
  * Discover full nodes by DNS query:
  * https://bitcoin.org/en/developer-guide#peer-discovery

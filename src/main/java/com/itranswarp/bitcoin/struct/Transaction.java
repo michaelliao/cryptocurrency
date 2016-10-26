@@ -1,11 +1,11 @@
-package com.itranswarp.bitcoin;
+package com.itranswarp.bitcoin.struct;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 import com.itranswarp.cryptocurrency.common.LockTimeSerializer;
 
@@ -43,11 +43,11 @@ public class Transaction {
 
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getHash() {
-		return Hash.doubleSha256(this.toByteArray());
+		return HashUtils.doubleSha256(this.toByteArray());
 	}
 
 	public byte[] calculateHash() {
-		return Hash.doubleSha256(this.toByteArray());
+		return HashUtils.doubleSha256(this.toByteArray());
 	}
 
 	public byte[] toByteArray() {

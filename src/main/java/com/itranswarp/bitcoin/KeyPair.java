@@ -1,10 +1,14 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
+
+import com.itranswarp.bitcoin.util.Base58Utils;
+import com.itranswarp.bitcoin.util.HashUtils;
+import com.itranswarp.cryptocurrency.common.Secp256k1;
 
 public class KeyPair {
 
@@ -88,15 +92,15 @@ public class KeyPair {
 			throw new IllegalArgumentException(
 					"bad length of uncompressed bytes: expect 65 but actual " + uncompressed.length);
 		}
-		byte[] hash = Hash.ripeMd160(Hash.sha256(uncompressed));
+		byte[] hash = HashUtils.ripeMd160(HashUtils.sha256(uncompressed));
 		return hashToPublicKey(hash);
 	}
 
 	static String hashToPublicKey(byte[] hash) {
 		byte[] hashWithNetworkId = concat(NETWORK_ID_ARRAY, hash);
-		byte[] checksum = Hash.doubleSha256(hashWithNetworkId);
+		byte[] checksum = HashUtils.doubleSha256(hashWithNetworkId);
 		byte[] address = concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
-		return Base58.encode(address);
+		return Base58Utils.encode(address);
 	}
 
 	/**
@@ -106,15 +110,15 @@ public class KeyPair {
 	public String getWalletImportFormat() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
 		byte[] extendedKey = concat(PRIVATE_KEY_PREFIX_ARRAY, key);
-		byte[] hash1 = Hash.sha256(extendedKey);
-		byte[] hash2 = Hash.sha256(hash1);
+		byte[] hash1 = HashUtils.sha256(extendedKey);
+		byte[] hash2 = HashUtils.sha256(hash1);
 		byte[] checksum = Arrays.copyOfRange(hash2, 0, 4);
 		byte[] extendedKeyWithChecksum = concat(extendedKey, checksum);
-		return Base58.encode(extendedKeyWithChecksum);
+		return Base58Utils.encode(extendedKeyWithChecksum);
 	}
 
 	static byte[] parseWIF(String wif) {
-		byte[] data = Base58.decodeChecked(wif);
+		byte[] data = Base58Utils.decodeChecked(wif);
 		if (data[0] != PRIVATE_KEY_PREFIX) {
 			throw new IllegalArgumentException("Leading byte is not 0x80.");
 		}
@@ -149,10 +153,10 @@ public class KeyPair {
 		do {
 			byte[] rnd = new byte[100 + sr.nextInt(100)];
 			sr.nextBytes(rnd);
-			hash = Hash.sha256(rnd);
+			hash = HashUtils.sha256(rnd);
 			first = hash[0] & 0xff;
 		} while (first == 0x00 || first == 0xff);
-		System.out.println(Hash.toHexString(hash));
+		System.out.println(HashUtils.toHexString(hash));
 		return hash;
 	}
 

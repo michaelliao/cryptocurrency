@@ -10,7 +10,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.cryptocurrency.common.JsonUtil;
-import com.itranswarp.cryptocurrency.common.PeerDiscover;
 
 public class BitcoinPeer implements AutoCloseable {
 

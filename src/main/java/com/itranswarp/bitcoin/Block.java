@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.struct.Header;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.struct.Transaction;
+import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 
 public class Block {
@@ -67,7 +68,7 @@ public class Block {
 		byte[] data = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
 				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).writeUnsignedInt(hdr.getNonce())
 				.toByteArray();
-		return Hash.doubleSha256(data);
+		return HashUtils.doubleSha256(data);
 	}
 
 	/**
@@ -86,7 +87,7 @@ public class Block {
 			byte[] nonceBytes = new byte[] { (byte) (0xff & tryNonce), (byte) (0xff & (tryNonce >> 8)),
 					(byte) (0xff & (tryNonce >> 16)), (byte) (0xff & (tryNonce >> 24)) };
 			byte[] data = concat(prefix, nonceBytes);
-			byte[] hash = Hash.doubleSha256(data);
+			byte[] hash = HashUtils.doubleSha256(data);
 			int leadingZeros = 0;
 			for (byte b : hash) {
 				if (b == 0) {
@@ -110,7 +111,7 @@ public class Block {
 		if (nonce < 0) {
 			System.out.println("Nonce not found!");
 		} else {
-			System.out.println("Found nonce = " + nonce + ", block hash = " + Hash.toHexString(blockHash));
+			System.out.println("Found nonce = " + nonce + ", block hash = " + HashUtils.toHexString(blockHash));
 		}
 		return nonce;
 	}
@@ -143,11 +144,11 @@ public class Block {
 		int extra = hashes.length % 2;
 		Bytes[] results = new Bytes[count + extra];
 		for (int i = 0; i < count; i++) {
-			results[i] = new Bytes(Hash.doubleSha256(concat(hashes[2 * i].data, hashes[2 * i + 1].data)));
+			results[i] = new Bytes(HashUtils.doubleSha256(concat(hashes[2 * i].data, hashes[2 * i + 1].data)));
 		}
 		if (extra == 1) {
 			results[count] = new Bytes(
-					Hash.doubleSha256(concat(hashes[hashes.length - 1].data, hashes[hashes.length - 1].data)));
+					HashUtils.doubleSha256(concat(hashes[hashes.length - 1].data, hashes[hashes.length - 1].data)));
 		}
 		return results;
 	}

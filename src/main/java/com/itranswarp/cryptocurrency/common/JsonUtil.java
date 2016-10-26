@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class JsonUtil {
 
@@ -55,6 +56,6 @@ class ByteArraySerializer extends JsonSerializer<byte[]> {
 	@Override
 	public void serialize(byte[] value, JsonGenerator gen, SerializerProvider serializers)
 			throws IOException, JsonProcessingException {
-		gen.writeString(Hash.toHexStringAsLittleEndian(value));
+		gen.writeString(HashUtils.toHexStringAsLittleEndian(value));
 	}
 }

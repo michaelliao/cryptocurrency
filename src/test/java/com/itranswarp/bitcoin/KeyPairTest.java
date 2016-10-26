@@ -1,4 +1,4 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin;
 
 import static org.junit.Assert.*;
 
@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 import org.junit.Test;
 
-import com.itranswarp.cryptocurrency.common.KeyPair;
+import com.itranswarp.bitcoin.KeyPair;
 
 public class KeyPairTest {
 

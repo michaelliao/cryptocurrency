@@ -7,7 +7,7 @@ import java.util.Arrays;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.struct.InvVect;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class InvMessage extends Message {
 
@@ -41,7 +41,7 @@ public class InvMessage extends Message {
 		return Arrays.stream(this.inventory).filter((iv) -> {
 			return iv.type == InvVect.MSG_BLOCK;
 		}).map((iv) -> {
-			return Hash.toHexStringAsLittleEndian(iv.hash);
+			return HashUtils.toHexStringAsLittleEndian(iv.hash);
 		}).toArray(String[]::new);
 	}
 
@@ -58,7 +58,7 @@ public class InvMessage extends Message {
 	@Override
 	public String toString() {
 		return "InvMessage([" + String.join(", ", Arrays.stream(this.inventory).map((inv) -> {
-			return inv.type + ":" + Hash.toHexStringAsLittleEndian(inv.hash);
+			return inv.type + ":" + HashUtils.toHexStringAsLittleEndian(inv.hash);
 		}).toArray(String[]::new)) + "])";
 	}
 }

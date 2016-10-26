@@ -1,4 +1,4 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin.io;
 
 import java.io.IOException;
 

@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.itranswarp.bitcoin.KeyPair;
 import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class ScriptParser {
 
@@ -50,7 +52,7 @@ public class ScriptParser {
 				default:
 					if (n >= 0x01 && n <= 0x4b) {
 						this.address = input.readBytes(n);
-						list.add("DATA(" + Hash.toHexString(this.address) + ")");
+						list.add("DATA(" + HashUtils.toHexString(this.address) + ")");
 					} else {
 						list.add("???");
 					}
@@ -70,6 +72,6 @@ public class ScriptParser {
 			// 65 bytes:
 			return KeyPair.publicKeyToAddress(this.address);
 		}
-		return Hash.toHexString(this.address);
+		return HashUtils.toHexString(this.address);
 	}
 }

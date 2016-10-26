@@ -23,7 +23,7 @@ import com.itranswarp.bitcoin.message.PongMessage;
 import com.itranswarp.bitcoin.message.VerAckMessage;
 import com.itranswarp.bitcoin.message.VersionMessage;
 import com.itranswarp.bitcoin.struct.InvVect;
-import com.itranswarp.cryptocurrency.common.Hash;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class Main {
 
