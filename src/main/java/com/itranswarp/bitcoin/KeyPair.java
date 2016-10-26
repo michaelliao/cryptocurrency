@@ -8,7 +8,7 @@ import org.bouncycastle.util.Arrays;
 
 import com.itranswarp.bitcoin.util.Base58Utils;
 import com.itranswarp.bitcoin.util.HashUtils;
-import com.itranswarp.cryptocurrency.common.Secp256k1;
+import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
 public class KeyPair {
 
@@ -61,7 +61,7 @@ public class KeyPair {
 	 */
 	public BigInteger[] getPublicKey() {
 		if (this.publicKey == null) {
-			ECPoint point = Secp256k1.getG().multiply(privateKey);
+			ECPoint point = Secp256k1Utils.getG().multiply(privateKey);
 			ECPoint normed = point.normalize();
 			byte[] x = normed.getXCoord().getEncoded();
 			byte[] y = normed.getYCoord().getEncoded();
