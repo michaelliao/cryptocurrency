@@ -8,6 +8,7 @@ import java.time.Instant;
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.struct.NetworkAddress;
 import com.itranswarp.bitcoin.util.NetworkUtils;
 
 /**

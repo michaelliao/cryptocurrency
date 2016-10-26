@@ -11,16 +11,14 @@ import com.itranswarp.cryptocurrency.common.LockTimeSerializer;
 
 public class Transaction {
 
-	int version; // int32, transaction data format version (note, this is
-					// signed)
-	long tx_in_count; // var_int, number of Transaction inputs
-	TxIn[] tx_ins; // a list of 1 or more transaction inputs or sources for
-					// coins
-	long tx_out_count; // var_int, number of Transaction outputs
-	TxOut[] tx_outs; // a list of 1 or more transaction outputs or destinations
-						// for coins
-	long lock_time; // uint32_t, the block number or timestamp at which this
-					// transaction is unlocked:
+	public int version; // int32_t, transaction data format version (signed)
+	public TxIn[] tx_ins; // a list of 1 or more transaction inputs or sources
+							// for coins
+	public TxOut[] tx_outs; // a list of 1 or more transaction outputs or
+							// destinations
+	// for coins
+	public long lock_time; // uint32_t, the block number or timestamp at which
+							// this transaction is unlocked:
 	// 0 Not locked
 	// < 500000000 Block number at which this transaction is unlocked
 	// >= 500000000 UNIX timestamp at which this transaction is unlocked
@@ -30,14 +28,14 @@ public class Transaction {
 
 	public Transaction(BitcoinInput input) throws IOException {
 		this.version = input.readInt();
-		this.tx_in_count = input.readVarInt();
-		this.tx_ins = new TxIn[(int) this.tx_in_count];
-		for (int i = 0; i < tx_ins.length; i++) {
+		long tx_in_count = input.readVarInt();
+		this.tx_ins = new TxIn[(int) tx_in_count];
+		for (int i = 0; i < this.tx_ins.length; i++) {
 			this.tx_ins[i] = new TxIn(input);
 		}
-		this.tx_out_count = input.readVarInt();
-		this.tx_outs = new TxOut[(int) this.tx_out_count];
-		for (int i = 0; i < tx_outs.length; i++) {
+		long tx_out_count = input.readVarInt();
+		this.tx_outs = new TxOut[(int) tx_out_count];
+		for (int i = 0; i < this.tx_outs.length; i++) {
 			this.tx_outs[i] = new TxOut(input);
 		}
 		this.lock_time = input.readUnsignedInt();
@@ -48,13 +46,18 @@ public class Transaction {
 		return Hash.doubleSha256(this.toByteArray());
 	}
 
+	public byte[] calculateHash() {
+		return Hash.doubleSha256(this.toByteArray());
+	}
+
 	public byte[] toByteArray() {
-		BitcoinOutput buffer = new BitcoinOutput().writeInt(version).writeVarInt(tx_in_count);
-		for (int i = 0; i < tx_ins.length; i++) {
+		BitcoinOutput buffer = new BitcoinOutput();
+		buffer.writeInt(this.version).writeVarInt(this.tx_ins.length);
+		for (int i = 0; i < this.tx_ins.length; i++) {
 			buffer.write(tx_ins[i].toByteArray());
 		}
-		buffer.writeVarInt(tx_out_count);
-		for (int i = 0; i < tx_outs.length; i++) {
+		buffer.writeVarInt(this.tx_outs.length);
+		for (int i = 0; i < this.tx_outs.length; i++) {
 			buffer.write(tx_outs[i].toByteArray());
 		}
 		buffer.writeUnsignedInt(lock_time);
@@ -69,12 +72,8 @@ public class Transaction {
 		this.version = version;
 	}
 
-	public long getTx_in_count() {
-		return tx_in_count;
-	}
-
-	public void setTx_in_count(long tx_in_count) {
-		this.tx_in_count = tx_in_count;
+	public long getTxInCount() {
+		return this.tx_ins.length;
 	}
 
 	public TxIn[] getTx_ins() {
@@ -85,12 +84,8 @@ public class Transaction {
 		this.tx_ins = tx_ins;
 	}
 
-	public long getTx_out_count() {
-		return tx_out_count;
-	}
-
-	public void setTx_out_count(long tx_out_count) {
-		this.tx_out_count = tx_out_count;
+	public long getTxOutCount() {
+		return this.tx_outs.length;
 	}
 
 	public TxOut[] getTx_outs() {
@@ -102,11 +97,11 @@ public class Transaction {
 	}
 
 	@JsonSerialize(using = LockTimeSerializer.class)
-	public long getLock_time() {
+	public long getLockTime() {
 		return lock_time;
 	}
 
-	public void setLock_time(long lock_time) {
+	public void setLockTime(long lock_time) {
 		this.lock_time = lock_time;
 	}
 

@@ -1,4 +1,4 @@
-package com.itranswarp.bitcoin.message;
+package com.itranswarp.bitcoin.struct;
 
 import java.io.IOException;
 
@@ -32,8 +32,8 @@ public class InvVect {
 													// more
 													// info.
 
-	int type; // uint32
-	byte[] hash; // 32-bytes hash
+	public int type; // uint32
+	public byte[] hash; // 32-bytes hash
 
 	public InvVect() {
 	}

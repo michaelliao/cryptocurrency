@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.struct.TimestampNetworkAddress;
 
 /**
  * Build P2P message:
@@ -40,7 +41,7 @@ public class AddrMessage extends Message {
 		output.writeVarInt(this.count);
 		for (int i = 0; i < this.count; i++) {
 			TimestampNetworkAddress taddr = this.addr_list[i];
-			output.writeInt(taddr.timestamp);
+			output.writeUnsignedInt(taddr.timestamp);
 			output.write(taddr.address.toByteArray(false));
 		}
 		return output.toByteArray();

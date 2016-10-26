@@ -7,12 +7,13 @@ import com.itranswarp.bitcoin.io.BitcoinOutput;
 
 public class TxIn {
 
-	OutPoint previousOutput;
-	long signatureLength;
-	byte[] signature;
-	long sequence; // uint32, Transaction version as defined by the sender.
-					// Intended for "replacement" of transactions when
-					// information is updated before inclusion into a block.
+	public OutPoint previousOutput;
+	public long signatureLength;
+	public byte[] signature;
+	public long sequence; // uint32, Transaction version as defined by the
+							// sender.
+	// Intended for "replacement" of transactions when
+	// information is updated before inclusion into a block.
 
 	public TxIn(BitcoinInput input) throws IOException {
 		this.previousOutput = new OutPoint(input);

@@ -56,6 +56,11 @@ public class BitcoinPeer implements AutoCloseable {
 		activeNodes.remove(node);
 	}
 
+	public void putAtLast(String node) {
+		activeNodes.remove(node);
+		activeNodes.add(node);
+	}
+
 	@Override
 	public void close() throws IOException {
 		fileManager.writeFile(ACTIVE_NODES_CACHE, JsonUtil.toJson(activeNodes));

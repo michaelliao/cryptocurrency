@@ -10,10 +10,11 @@ import com.itranswarp.cryptocurrency.common.ScriptParser;
 
 public class TxOut {
 
-	long value; // int64, Transaction Value
-	long scriptLength;
-	byte[] pk_script; // uchar[], Usually contains the public key as a Bitcoin
-						// script setting up conditions to claim this output.
+	public long value; // int64, Transaction Value
+	public long scriptLength;
+	public byte[] pk_script; // uchar[], Usually contains the public key as a
+								// Bitcoin
+	// script setting up conditions to claim this output.
 
 	String address;
 

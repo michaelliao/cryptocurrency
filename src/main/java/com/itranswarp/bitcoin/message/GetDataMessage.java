@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.struct.InvVect;
 
 /**
  * Build P2P message:

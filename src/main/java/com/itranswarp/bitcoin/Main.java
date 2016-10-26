@@ -1,5 +1,6 @@
 package com.itranswarp.bitcoin;
 
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -12,13 +13,17 @@ import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinPeer;
+import com.itranswarp.bitcoin.message.BlockMessage;
 import com.itranswarp.bitcoin.message.GetBlocksMessage;
+import com.itranswarp.bitcoin.message.GetDataMessage;
 import com.itranswarp.bitcoin.message.InvMessage;
 import com.itranswarp.bitcoin.message.Message;
 import com.itranswarp.bitcoin.message.PingMessage;
 import com.itranswarp.bitcoin.message.PongMessage;
 import com.itranswarp.bitcoin.message.VerAckMessage;
 import com.itranswarp.bitcoin.message.VersionMessage;
+import com.itranswarp.bitcoin.struct.InvVect;
+import com.itranswarp.cryptocurrency.common.Hash;
 
 public class Main {
 
@@ -63,6 +68,8 @@ public class Main {
 						}
 					} catch (SocketTimeoutException | SocketException e) {
 						peer.removePeer(node);
+					} catch (EOFException e) {
+						peer.putAtLast(node);
 					}
 				}
 			}
@@ -90,9 +97,19 @@ public class Main {
 		}
 		if (msg instanceof InvMessage) {
 			InvMessage inv = (InvMessage) msg;
-			String[] hashes = inv.getBlockHashes();
-
+			byte[][] hashes = inv.getBlockHashes();
+			if (hashes.length > 0) {
+				return new GetDataMessage(InvVect.MSG_BLOCK, hashes);
+			}
+		}
+		if (msg instanceof BlockMessage) {
+			BlockMessage block = (BlockMessage) msg;
+			processBlock(block);
 		}
 		return null;
+	}
+
+	private static void processBlock(BlockMessage block) {
+		log.info("Process block...");
 	}
 }

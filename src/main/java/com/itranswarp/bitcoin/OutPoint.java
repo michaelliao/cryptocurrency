@@ -7,9 +7,9 @@ import com.itranswarp.bitcoin.io.BitcoinOutput;
 
 public class OutPoint {
 
-	byte[] hash; // 32-bytes, the hash of the referenced transaction.
-	long index; // uint32, the index of the specific output in the transaction.
-				// The first output is 0, etc.
+	public byte[] hash; // 32-bytes, the hash of the referenced transaction.
+	public long index; // uint32, the index of the specific output in the
+						// transaction. The first output is 0, etc.
 
 	public OutPoint(BitcoinInput input) throws IOException {
 		this.hash = input.readBytes(32);

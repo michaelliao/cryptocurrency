@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.struct.InvVect;
 import com.itranswarp.cryptocurrency.common.Hash;
 
 public class InvMessage extends Message {
@@ -28,7 +29,15 @@ public class InvMessage extends Message {
 		}
 	}
 
-	public String[] getBlockHashes() {
+	public byte[][] getBlockHashes() {
+		return Arrays.stream(this.inventory).filter((iv) -> {
+			return iv.type == InvVect.MSG_BLOCK;
+		}).map((iv) -> {
+			return iv.hash;
+		}).toArray(byte[][]::new);
+	}
+
+	public String[] getBlockHashesAsString() {
 		return Arrays.stream(this.inventory).filter((iv) -> {
 			return iv.type == InvVect.MSG_BLOCK;
 		}).map((iv) -> {

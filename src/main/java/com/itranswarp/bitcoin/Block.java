@@ -5,13 +5,14 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.struct.Header;
 import com.itranswarp.cryptocurrency.common.Hash;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 
 public class Block {
 
 	int size;
-	BlockHeader blockHeader;
+	Header blockHeader;
 	Transaction[] txs;
 
 	public Block() {
@@ -20,7 +21,7 @@ public class Block {
 	public Block(BitcoinInput input) throws IOException {
 		// read block size:
 		this.size = input.readInt();
-		this.blockHeader = new BlockHeader(input);
+		this.blockHeader = new Header(input);
 		// number of tx:
 		long n_tx = input.readVarInt();
 		this.txs = new Transaction[(int) n_tx];
@@ -37,11 +38,11 @@ public class Block {
 		this.size = size;
 	}
 
-	public BlockHeader getBlockHeader() {
+	public Header getBlockHeader() {
 		return blockHeader;
 	}
 
-	public void setBlockHeader(BlockHeader blockHeader) {
+	public void setBlockHeader(Header blockHeader) {
 		this.blockHeader = blockHeader;
 	}
 
@@ -62,7 +63,7 @@ public class Block {
 	 */
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getBlockHash() {
-		BlockHeader hdr = this.getBlockHeader();
+		Header hdr = this.getBlockHeader();
 		byte[] data = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
 				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).writeUnsignedInt(hdr.getNonce())
 				.toByteArray();
@@ -74,7 +75,7 @@ public class Block {
 	 */
 	public long calculateNonce() {
 		System.out.println("Calculate nonce...");
-		BlockHeader hdr = this.getBlockHeader();
+		Header hdr = this.getBlockHeader();
 		int zeros = 3;
 		byte[] prefix = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
 				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).toByteArray();
@@ -116,6 +117,17 @@ public class Block {
 
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getMerkleRoot() {
+		Bytes[] hashes = java.util.Arrays.asList(txs).stream().map((tx) -> {
+			byte[] bs = tx.getHash();
+			return new Bytes(bs);
+		}).toArray(Bytes[]::new);
+		while (hashes.length > 1) {
+			hashes = merkleHash(hashes);
+		}
+		return hashes[0].data;
+	}
+
+	public byte[] calculateMerkleRoot() {
 		Bytes[] hashes = java.util.Arrays.asList(txs).stream().map((tx) -> {
 			byte[] bs = tx.getHash();
 			return new Bytes(bs);
