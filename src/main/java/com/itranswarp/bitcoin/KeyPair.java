@@ -7,6 +7,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
 
 import com.itranswarp.bitcoin.util.Base58Utils;
+import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
@@ -15,6 +16,7 @@ public class KeyPair {
 	private final BigInteger privateKey;
 	private BigInteger[] publicKey = null;
 
+	// prevent instance directly:
 	private KeyPair(BigInteger privateKey) {
 		this.privateKey = privateKey;
 	}
@@ -45,7 +47,7 @@ public class KeyPair {
 	/**
 	 * Create a new KeyPair with random private key.
 	 */
-	public static KeyPair newKeyPair() {
+	public static KeyPair createNewKeyPair() {
 		return of(generatePrivateKey());
 	}
 
@@ -72,8 +74,7 @@ public class KeyPair {
 
 	/**
 	 * Get version 1 of BitCoin address (hash of public key):
-	 * https://en.bitcoin.it/wiki/
-	 * Technical_background_of_version_1_Bitcoin_addresses
+	 * https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
 	 */
 	public String getAddress() {
 		BigInteger[] keys = getPublicKey();
@@ -83,7 +84,7 @@ public class KeyPair {
 	static String publicKeyToAddress(BigInteger x, BigInteger y) {
 		byte[] xs = bigIntegerToBytes(x, 32);
 		byte[] ys = bigIntegerToBytes(y, 32);
-		byte[] uncompressed = concat(PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
+		byte[] uncompressed = BytesUtils.concat(PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
 		return publicKeyToAddress(uncompressed);
 	}
 
@@ -97,9 +98,9 @@ public class KeyPair {
 	}
 
 	static String hashToPublicKey(byte[] hash) {
-		byte[] hashWithNetworkId = concat(NETWORK_ID_ARRAY, hash);
+		byte[] hashWithNetworkId = BytesUtils.concat(NETWORK_ID_ARRAY, hash);
 		byte[] checksum = HashUtils.doubleSha256(hashWithNetworkId);
-		byte[] address = concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
+		byte[] address = BytesUtils.concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
 		return Base58Utils.encode(address);
 	}
 
@@ -109,11 +110,10 @@ public class KeyPair {
 	 */
 	public String getWalletImportFormat() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
-		byte[] extendedKey = concat(PRIVATE_KEY_PREFIX_ARRAY, key);
-		byte[] hash1 = HashUtils.sha256(extendedKey);
-		byte[] hash2 = HashUtils.sha256(hash1);
-		byte[] checksum = Arrays.copyOfRange(hash2, 0, 4);
-		byte[] extendedKeyWithChecksum = concat(extendedKey, checksum);
+		byte[] extendedKey = BytesUtils.concat(PRIVATE_KEY_PREFIX_ARRAY, key);
+		byte[] hash = HashUtils.doubleSha256(extendedKey);
+		byte[] checksum = Arrays.copyOfRange(hash, 0, 4);
+		byte[] extendedKeyWithChecksum = BytesUtils.concat(extendedKey, checksum);
 		return Base58Utils.encode(extendedKeyWithChecksum);
 	}
 
@@ -126,26 +126,7 @@ public class KeyPair {
 		return Arrays.copyOfRange(data, 1, data.length);
 	}
 
-	static byte[] concat(byte[] buf1, byte[] buf2) {
-		byte[] buffer = new byte[buf1.length + buf2.length];
-		int offset = 0;
-		System.arraycopy(buf1, 0, buffer, offset, buf1.length);
-		offset += buf1.length;
-		System.arraycopy(buf2, 0, buffer, offset, buf2.length);
-		return buffer;
-	}
-
-	static byte[] concat(byte[] buf1, byte[] buf2, byte[] buf3) {
-		byte[] buffer = new byte[buf1.length + buf2.length + buf3.length];
-		int offset = 0;
-		System.arraycopy(buf1, 0, buffer, offset, buf1.length);
-		offset += buf1.length;
-		System.arraycopy(buf2, 0, buffer, offset, buf2.length);
-		offset += buf2.length;
-		System.arraycopy(buf3, 0, buffer, offset, buf3.length);
-		return buffer;
-	}
-
+	// generate random private key between 0x00ffff... ~ 0xff0000...
 	static byte[] generatePrivateKey() {
 		byte[] hash = null;
 		int first;

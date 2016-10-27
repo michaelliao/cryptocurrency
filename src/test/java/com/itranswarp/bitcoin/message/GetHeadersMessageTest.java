@@ -4,16 +4,11 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.itranswarp.bitcoin.util.HashUtils;
 
 public class GetHeadersMessageTest {
-
-	@Before
-	public void setUp() throws Exception {
-	}
 
 	@Test
 	public void testNewGetHeadersMessageWithPayload() throws IOException {

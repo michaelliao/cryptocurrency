@@ -6,16 +6,15 @@ import com.itranswarp.bitcoin.io.BitcoinInput;
 
 public class Inv {
 
-	long count;
 	InvVect[] inventory;
 
 	public Inv() {
 	}
 
 	public Inv(BitcoinInput input) throws IOException {
-		this.count = input.readVarInt();
-		this.inventory = new InvVect[(int) this.count];
-		for (int i = 0; i < this.count; i++) {
+		long count = input.readVarInt(); // do not store count
+		this.inventory = new InvVect[(int) count];
+		for (int i = 0; i < this.inventory.length; i++) {
 			this.inventory[i] = new InvVect(input);
 		}
 	}

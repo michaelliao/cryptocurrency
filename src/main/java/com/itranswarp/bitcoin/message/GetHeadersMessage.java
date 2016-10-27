@@ -27,7 +27,7 @@ public class GetHeadersMessage extends Message {
 			this.version = input.readInt();
 			long hashCount = input.readVarInt(); // do not keep hash count
 			this.hashes = new byte[(int) hashCount][];
-			for (int i = 0; i < hashCount; i++) {
+			for (int i = 0; i < this.hashes.length; i++) {
 				this.hashes[i] = input.readBytes(32);
 			}
 			this.hashStop = input.readBytes(32);

@@ -12,14 +12,17 @@ public class Header {
 
 	public int version; // int32, block version information (note, this is
 						// signed)
+	@JsonSerialize(using = HashSerializer.class)
 	public byte[] prevHash; // 32 bytes, The hash value of the previous block
 							// this
 							// particular block references
+	@JsonSerialize(using = HashSerializer.class)
 	public byte[] merkleHash; // 32 bytes, The reference to a Merkle tree
 								// collection
 								// which is a hash of all transactions related
 								// to this
 								// block
+	@JsonSerialize(using = TimestampSerializer.class)
 	public long timestamp; // uint32, A timestamp recording when this block was
 							// created
 							// (Will overflow in 2106)
@@ -44,56 +47,4 @@ public class Header {
 				.writeUnsignedInt(this.timestamp).writeUnsignedInt(this.bits).writeUnsignedInt(this.nonce)
 				.toByteArray();
 	}
-
-	public int getVersion() {
-		return version;
-	}
-
-	public void setVersion(int version) {
-		this.version = version;
-	}
-
-	@JsonSerialize(using = HashSerializer.class)
-	public byte[] getPrevHash() {
-		return prevHash;
-	}
-
-	public void setPrevHash(byte[] prevHash) {
-		this.prevHash = prevHash;
-	}
-
-	@JsonSerialize(using = HashSerializer.class)
-	public byte[] getMerkleHash() {
-		return merkleHash;
-	}
-
-	public void setMerkleHash(byte[] merkleHash) {
-		this.merkleHash = merkleHash;
-	}
-
-	@JsonSerialize(using = TimestampSerializer.class)
-	public long getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
-	}
-
-	public long getBits() {
-		return bits;
-	}
-
-	public void setBits(long bits) {
-		this.bits = bits;
-	}
-
-	public long getNonce() {
-		return nonce;
-	}
-
-	public void setNonce(long nonce) {
-		this.nonce = nonce;
-	}
-
 }

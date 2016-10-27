@@ -15,21 +15,19 @@ import com.itranswarp.bitcoin.struct.TimestampNetworkAddress;
  */
 public class AddrMessage extends Message {
 
-	long count; // var_int
 	TimestampNetworkAddress[] addr_list; // (uint32_t + net_addr)[]
 
 	public AddrMessage() {
 		super("addr");
-		this.count = 0;
 		this.addr_list = new TimestampNetworkAddress[0];
 	}
 
 	public AddrMessage(byte[] payload) throws IOException {
 		super("addr");
 		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(payload))) {
-			this.count = input.readVarInt();
-			this.addr_list = new TimestampNetworkAddress[(int) this.count];
-			for (int i = 0; i < this.count; i++) {
+			long count = input.readVarInt(); // do not store count
+			this.addr_list = new TimestampNetworkAddress[(int) count];
+			for (int i = 0; i < this.addr_list.length; i++) {
 				addr_list[i] = new TimestampNetworkAddress(input);
 			}
 		}
@@ -38,8 +36,8 @@ public class AddrMessage extends Message {
 	@Override
 	protected byte[] getPayload() {
 		BitcoinOutput output = new BitcoinOutput();
-		output.writeVarInt(this.count);
-		for (int i = 0; i < this.count; i++) {
+		output.writeVarInt(this.addr_list.length);
+		for (int i = 0; i < this.addr_list.length; i++) {
 			TimestampNetworkAddress taddr = this.addr_list[i];
 			output.writeUnsignedInt(taddr.timestamp);
 			output.write(taddr.address.toByteArray(false));
@@ -49,7 +47,7 @@ public class AddrMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "AddrMessage(count=" + this.count + ")";
+		return "AddrMessage(count=" + this.addr_list.length + ")";
 	}
 
 }

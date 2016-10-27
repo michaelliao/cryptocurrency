@@ -1,4 +1,4 @@
-package com.itranswarp.crytocurrency.store;
+package com.itranswarp.bitcoin.store;
 
 import static org.junit.Assert.*;
 
@@ -12,6 +12,10 @@ import javax.persistence.Transient;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.itranswarp.bitcoin.store.AbstractEntity;
+import com.itranswarp.bitcoin.store.Database;
+import com.itranswarp.bitcoin.store.StoreException;
 
 public class DatabaseTest {
 
@@ -41,7 +45,7 @@ public class DatabaseTest {
 	public void testInsertWithId() {
 		TestEntity t = newTestEntity("abc-123", "Bob", null, 0);
 		database.insert(t);
-		assertEquals("abc-123", t.id);
+		assertEquals("abc-123", t.hashId);
 	}
 
 	@Test(expected = StoreException.class)
@@ -63,10 +67,10 @@ public class DatabaseTest {
 		assertEquals(3, list.size());
 		// unique:
 		TestEntity u = database.queryForUnique(TestEntity.class, "name = ?", "Bob-1");
-		assertEquals("p-1", u.id);
+		assertEquals("p-1", u.hashId);
 		// id:
 		TestEntity d = database.queryById(TestEntity.class, "p-3");
-		assertEquals("p-3", d.id);
+		assertEquals("p-3", d.hashId);
 	}
 
 	@Test
@@ -74,9 +78,9 @@ public class DatabaseTest {
 		TestEntity t = newTestEntity("x1234", "Bob", null, 0);
 		database.insert(t);
 		TestEntity t2 = new TestEntity();
-		t2.id = t.id;
+		t2.hashId = t.hashId;
 		database.delete(t2);
-		assertNull(database.getById(TestEntity.class, t.id));
+		assertNull(database.getById(TestEntity.class, t.hashId));
 	}
 
 	@Test
@@ -101,7 +105,7 @@ public class DatabaseTest {
 
 	TestEntity newTestEntity(String id, String name, String address, long balance) {
 		TestEntity t = new TestEntity();
-		t.id = id;
+		t.hashId = id;
 		t.name = name;
 		t.address = address;
 		t.balance = balance;
@@ -113,7 +117,7 @@ public class DatabaseTest {
 class TestEntity extends AbstractEntity {
 
 	@Id
-	public String id;
+	public String hashId;
 
 	@Column(length = 100, nullable = false)
 	public String name;
@@ -131,6 +135,6 @@ class TestEntity extends AbstractEntity {
 
 	@Override
 	public String getId() {
-		return this.id;
+		return this.hashId;
 	}
 }

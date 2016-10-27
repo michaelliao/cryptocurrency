@@ -1,4 +1,4 @@
-package com.itranswarp.crytocurrency.store;
+package com.itranswarp.bitcoin.store;
 
 public class StoreException extends RuntimeException {
 

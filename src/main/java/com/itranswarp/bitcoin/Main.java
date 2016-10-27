@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -109,7 +110,13 @@ public class Main {
 		return null;
 	}
 
-	private static void processBlock(BlockMessage block) {
+	private static boolean processBlock(BlockMessage block) {
 		log.info("Process block...");
+		byte[] merckleHash = block.calculateMerkleRoot();
+		if (!Arrays.equals(merckleHash, block.header.merkleHash)) {
+			log.error("Validate merckle hash failed.");
+			return false;
+		}
+		return true;
 	}
 }

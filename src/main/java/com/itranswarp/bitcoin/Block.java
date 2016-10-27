@@ -7,6 +7,7 @@ import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.struct.Header;
 import com.itranswarp.bitcoin.struct.Transaction;
+import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.cryptocurrency.common.HashSerializer;
 
@@ -65,9 +66,8 @@ public class Block {
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getBlockHash() {
 		Header hdr = this.getBlockHeader();
-		byte[] data = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
-				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).writeUnsignedInt(hdr.getNonce())
-				.toByteArray();
+		byte[] data = new BitcoinOutput().writeInt(hdr.version).write(hdr.prevHash).write(getMerkleRoot())
+				.writeUnsignedInt(hdr.timestamp).writeUnsignedInt(hdr.bits).writeUnsignedInt(hdr.nonce).toByteArray();
 		return HashUtils.doubleSha256(data);
 	}
 
@@ -78,15 +78,15 @@ public class Block {
 		System.out.println("Calculate nonce...");
 		Header hdr = this.getBlockHeader();
 		int zeros = 3;
-		byte[] prefix = new BitcoinOutput().writeInt(hdr.getVersion()).write(hdr.getPrevHash()).write(getMerkleRoot())
-				.writeUnsignedInt(hdr.getTimestamp()).writeUnsignedInt(hdr.getBits()).toByteArray();
+		byte[] prefix = new BitcoinOutput().writeInt(hdr.version).write(hdr.prevHash).write(getMerkleRoot())
+				.writeUnsignedInt(hdr.timestamp).writeUnsignedInt(hdr.bits).toByteArray();
 		long nonce = (-1);
 		byte[] blockHash = null;
 		long startTime = System.currentTimeMillis();
 		for (long tryNonce = 0; tryNonce < 0xffffffffL; tryNonce++) {
 			byte[] nonceBytes = new byte[] { (byte) (0xff & tryNonce), (byte) (0xff & (tryNonce >> 8)),
 					(byte) (0xff & (tryNonce >> 16)), (byte) (0xff & (tryNonce >> 24)) };
-			byte[] data = concat(prefix, nonceBytes);
+			byte[] data = BytesUtils.concat(prefix, nonceBytes);
 			byte[] hash = HashUtils.doubleSha256(data);
 			int leadingZeros = 0;
 			for (byte b : hash) {
@@ -144,22 +144,14 @@ public class Block {
 		int extra = hashes.length % 2;
 		Bytes[] results = new Bytes[count + extra];
 		for (int i = 0; i < count; i++) {
-			results[i] = new Bytes(HashUtils.doubleSha256(concat(hashes[2 * i].data, hashes[2 * i + 1].data)));
+			results[i] = new Bytes(
+					HashUtils.doubleSha256(BytesUtils.concat(hashes[2 * i].data, hashes[2 * i + 1].data)));
 		}
 		if (extra == 1) {
-			results[count] = new Bytes(
-					HashUtils.doubleSha256(concat(hashes[hashes.length - 1].data, hashes[hashes.length - 1].data)));
+			results[count] = new Bytes(HashUtils
+					.doubleSha256(BytesUtils.concat(hashes[hashes.length - 1].data, hashes[hashes.length - 1].data)));
 		}
 		return results;
-	}
-
-	byte[] concat(byte[] b1, byte[] b2) {
-		byte[] r = new byte[b1.length + b2.length];
-		int offset = 0;
-		System.arraycopy(b1, 0, r, offset, b1.length);
-		offset += b1.length;
-		System.arraycopy(b2, 0, r, offset, b2.length);
-		return r;
 	}
 
 	static class Bytes {

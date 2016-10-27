@@ -18,18 +18,18 @@ import com.itranswarp.bitcoin.util.NetworkUtils;
  */
 public class VersionMessage extends Message {
 
-	int protocolVersion;
-	long services;
-	long timestamp;
+	public int protocolVersion;
+	public long services;
+	public long timestamp;
 
-	NetworkAddress recipientAddress;
-	NetworkAddress senderAddress;
+	public NetworkAddress recipientAddress;
+	public NetworkAddress senderAddress;
 
-	long nonce;
-	String subVersion;
+	public long nonce;
+	public String subVersion;
 
-	int lastBlock;
-	boolean relay;
+	public int lastBlock;
+	public boolean relay;
 
 	public VersionMessage(byte[] payload) throws IOException {
 		super("version");

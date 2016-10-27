@@ -23,7 +23,7 @@ public class InvMessage extends Message {
 		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(payload))) {
 			long count = input.readVarInt(); // do not store count
 			this.inventory = new InvVect[(int) count];
-			for (int i = 0; i < count; i++) {
+			for (int i = 0; i < this.inventory.length; i++) {
 				this.inventory[i] = new InvVect(input);
 			}
 		}

@@ -2,8 +2,10 @@ package com.itranswarp.bitcoin.struct;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.cryptocurrency.common.HashSerializer;
 
 public class InvVect {
 
@@ -33,6 +35,8 @@ public class InvVect {
 													// info.
 
 	public int type; // uint32
+	
+	@JsonSerialize(using = HashSerializer.class)
 	public byte[] hash; // 32-bytes hash
 
 	public InvVect() {

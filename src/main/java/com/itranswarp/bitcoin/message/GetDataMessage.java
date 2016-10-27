@@ -15,12 +15,10 @@ import com.itranswarp.bitcoin.struct.InvVect;
  */
 public class GetDataMessage extends Message {
 
-	long count; // var int
 	InvVect[] inventory; // byte[36]
 
 	public GetDataMessage(int type, byte[]... hashes) {
 		super("getdata");
-		this.count = hashes.length;
 		this.inventory = new InvVect[hashes.length];
 		for (int i = 0; i < this.inventory.length; i++) {
 			InvVect iv = new InvVect();
@@ -33,9 +31,9 @@ public class GetDataMessage extends Message {
 	public GetDataMessage(byte[] payload) throws IOException {
 		super("getdata");
 		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(payload))) {
-			this.count = input.readVarInt();
-			this.inventory = new InvVect[(int) this.count];
-			for (int i = 0; i < this.count; i++) {
+			long count = input.readVarInt(); // do not store count
+			this.inventory = new InvVect[(int) count];
+			for (int i = 0; i < this.inventory.length; i++) {
 				this.inventory[i] = new InvVect(input);
 			}
 		}
@@ -43,8 +41,8 @@ public class GetDataMessage extends Message {
 
 	@Override
 	protected byte[] getPayload() {
-		BitcoinOutput output = new BitcoinOutput().writeVarInt(this.count);
-		for (int i = 0; i < this.count; i++) {
+		BitcoinOutput output = new BitcoinOutput().writeVarInt(this.inventory.length);
+		for (int i = 0; i < this.inventory.length; i++) {
 			output.write(this.inventory[i].toByteArray());
 		}
 		return output.toByteArray();
@@ -52,7 +50,7 @@ public class GetDataMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "GetDataMessage(count=" + this.count + ")";
+		return "GetDataMessage(count=" + this.inventory.length + ")";
 	}
 
 }

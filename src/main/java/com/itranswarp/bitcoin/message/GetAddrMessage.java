@@ -10,6 +10,10 @@ import java.io.IOException;
  */
 public class GetAddrMessage extends Message {
 
+	public GetAddrMessage() {
+		super("getaddr");
+	}
+
 	public GetAddrMessage(byte[] payload) throws IOException {
 		super("getaddr");
 	}

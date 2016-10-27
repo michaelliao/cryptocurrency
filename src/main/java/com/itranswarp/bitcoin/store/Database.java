@@ -1,4 +1,4 @@
-package com.itranswarp.crytocurrency.store;
+package com.itranswarp.bitcoin.store;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -28,19 +29,31 @@ public class Database {
 		this.jdbcConnectionUrl = "jdbc:hsqldb:file:" + dbFile;
 	}
 
-	public <T extends AbstractEntity> T getById(Class<T> entityClass, String id) {
-		List<T> list = queryForList(entityClass, "id = ?", id);
-		if (list.isEmpty()) {
-			return null;
+	/**
+	 * Query by id, or throw exception if not found.
+	 */
+	public <T extends AbstractEntity> T queryById(Class<T> entityClass, String id) {
+		T t = getById(entityClass, id);
+		if (t == null) {
+			throw new StoreException("Entity not found.");
 		}
-		if (list.size() > 1) {
-			throw new StoreException("More than 1 results.");
-		}
-		return list.get(0);
+		return t;
 	}
 
-	public <T extends AbstractEntity> T queryById(Class<T> entityClass, String id) {
-		return queryForUnique(entityClass, "id = ?", id);
+	/**
+	 * Get by id, or null if not found.
+	 */
+	public <T extends AbstractEntity> T getById(Class<T> entityClass, String id) {
+		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+			EntityInfo ei = getEntityInfo(entityClass);
+			List<T> list = ctx.query(ei, "SELECT * FROM " + ei.table + " WHERE " + ei.id.name + " = ?", id);
+			if (list.isEmpty()) {
+				return null;
+			}
+			return list.get(0);
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
 	}
 
 	public <T extends AbstractEntity> T queryForUnique(Class<T> entityClass, String where, Object... params) {
@@ -195,6 +208,7 @@ class EntityInfo implements RowMapper {
 	final Class<?> clazz;
 	final String table;
 	final List<Property> properties;
+	final Property id;
 	final String insertSQL;
 	final String deleteSQL;
 	final String ddl;
@@ -202,7 +216,7 @@ class EntityInfo implements RowMapper {
 	EntityInfo(Class<?> clazz) {
 		this.clazz = clazz;
 		this.table = getTableName(clazz);
-		this.properties = Arrays.asList(clazz.getFields()).stream().map((f) -> {
+		this.properties = Arrays.stream(clazz.getFields()).map((f) -> {
 			if (f.isAnnotationPresent(Transient.class)) {
 				return null;
 			}
@@ -210,9 +224,21 @@ class EntityInfo implements RowMapper {
 		}).filter((p) -> {
 			return p != null;
 		}).collect(Collectors.toList());
+		Property[] ids = Arrays.stream(clazz.getFields()).filter((f) -> {
+			return f.isAnnotationPresent(Id.class);
+		}).map((f) -> {
+			return new Property(f);
+		}).toArray(Property[]::new);
+		if (ids.length == 0) {
+			throw new IllegalArgumentException("@Id not found.");
+		}
+		if (ids.length > 1) {
+			throw new IllegalArgumentException("Multiple @Id found.");
+		}
+		this.id = ids[0];
 		this.insertSQL = "INSERT INTO " + this.table + " (" + namesOf(this.properties) + ") VALUES ("
 				+ numOf(this.properties.size()) + ")";
-		this.deleteSQL = "DELETE FROM " + this.table + " WHERE id = ?";
+		this.deleteSQL = "DELETE FROM " + this.table + " WHERE " + this.id.name + " = ?";
 		this.ddl = "CREATE TABLE " + this.table + " (" + String.join(", ", this.properties.stream().map((p) -> {
 			return p.ddl;
 		}).collect(Collectors.toList())) + ")";

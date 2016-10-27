@@ -1,6 +1,10 @@
-package com.itranswarp.bitcoin.store;
+package com.itranswarp.bitcoin.store.model;
 
 public class BlockChainStore implements AutoCloseable {
+
+	public BlockChainStore() {
+		//
+	}
 
 	public void addBlock() {
 		//

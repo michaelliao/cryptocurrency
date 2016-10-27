@@ -1,9 +1,9 @@
-package com.itranswarp.bitcoin.store;
+package com.itranswarp.bitcoin.store.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
-import com.itranswarp.crytocurrency.store.AbstractEntity;
+import com.itranswarp.bitcoin.store.AbstractEntity;
 
 @Entity
 public class UtxoEntity extends AbstractEntity {

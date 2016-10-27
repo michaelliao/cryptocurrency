@@ -1,4 +1,4 @@
-package com.itranswarp.crytocurrency.store;
+package com.itranswarp.bitcoin.store;
 
 import java.util.concurrent.atomic.AtomicLong;
 

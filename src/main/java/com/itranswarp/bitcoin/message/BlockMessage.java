@@ -7,6 +7,7 @@ import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.struct.Header;
 import com.itranswarp.bitcoin.struct.Transaction;
+import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 
 /**
@@ -17,8 +18,8 @@ import com.itranswarp.bitcoin.util.HashUtils;
  */
 public class BlockMessage extends Message {
 
-	Header header;
-	Transaction[] txns;
+	public Header header;
+	public Transaction[] txns;
 
 	public BlockMessage() {
 		super("addr");
@@ -31,7 +32,7 @@ public class BlockMessage extends Message {
 			this.header = new Header(input);
 			long txnCount = input.readVarInt(); // do not store txn_count
 			this.txns = new Transaction[(int) txnCount];
-			for (int i = 0; i < txnCount; i++) {
+			for (int i = 0; i < this.txns.length; i++) {
 				this.txns[i] = new Transaction(input);
 			}
 		}
@@ -63,21 +64,13 @@ public class BlockMessage extends Message {
 		int extra = hashes.length % 2;
 		byte[][] results = new byte[count + extra][];
 		for (int i = 0; i < count; i++) {
-			results[i] = HashUtils.doubleSha256(concat(hashes[2 * i], hashes[2 * i + 1]));
+			results[i] = HashUtils.doubleSha256(BytesUtils.concat(hashes[2 * i], hashes[2 * i + 1]));
 		}
 		if (extra == 1) {
-			results[count] = HashUtils.doubleSha256(concat(hashes[hashes.length - 1], hashes[hashes.length - 1]));
+			results[count] = HashUtils
+					.doubleSha256(BytesUtils.concat(hashes[hashes.length - 1], hashes[hashes.length - 1]));
 		}
 		return results;
-	}
-
-	byte[] concat(byte[] b1, byte[] b2) {
-		byte[] r = new byte[b1.length + b2.length];
-		int offset = 0;
-		System.arraycopy(b1, 0, r, offset, b1.length);
-		offset += b1.length;
-		System.arraycopy(b2, 0, r, offset, b2.length);
-		return r;
 	}
 
 	@Override
