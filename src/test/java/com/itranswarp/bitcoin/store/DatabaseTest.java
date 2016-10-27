@@ -23,7 +23,7 @@ public class DatabaseTest {
 
 	@Before
 	public void setUp() {
-		database = new Database("test.db");
+		database = Database.init("test.db");
 		database.dropTable(TestEntity.class);
 		database.createTable(TestEntity.class);
 	}
@@ -98,7 +98,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testOpenConnection() throws Exception {
-		Connection conn = database.openConnection();
+		Connection conn = Database.openConnection();
 		assertNotNull(conn);
 		conn.close();
 	}

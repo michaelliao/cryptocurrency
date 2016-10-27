@@ -2,6 +2,7 @@ package com.itranswarp.bitcoin.store;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,10 +24,26 @@ import org.apache.commons.logging.LogFactory;
 
 public class Database {
 
-	private final String jdbcConnectionUrl;
+	static String jdbcConnectionUrl;
 
-	public Database(String dbFile) {
-		this.jdbcConnectionUrl = "jdbc:hsqldb:file:" + dbFile;
+	public static Database init(String dbFile) {
+		jdbcConnectionUrl = "jdbc:hsqldb:file:" + dbFile;
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			// this.createTable(BlockEntity.class);
+			try (ConnectionContext ctx2 = new ConnectionContext()) {
+			}
+		}
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			DatabaseMetaData meta = ConnectionContext.getConnection().getMetaData();
+			ResultSet rs = meta.getTables(null, null, "%", new String[] { "TABLE" });
+			while (rs.next()) {
+				String name = rs.getString(3);
+				System.out.println("> " + name);
+			}
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
+		return new Database();
 	}
 
 	/**
@@ -44,8 +61,8 @@ public class Database {
 	 * Get by id, or null if not found.
 	 */
 	public <T extends AbstractEntity> T getById(Class<T> entityClass, String id) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
-			EntityInfo ei = getEntityInfo(entityClass);
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			EntityInfo<T> ei = getEntityInfo(entityClass);
 			List<T> list = ctx.query(ei, "SELECT * FROM " + ei.table + " WHERE " + ei.id.name + " = ?", id);
 			if (list.isEmpty()) {
 				return null;
@@ -68,8 +85,8 @@ public class Database {
 	}
 
 	public <T extends AbstractEntity> List<T> queryForList(Class<T> entityClass, String where, Object... params) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
-			EntityInfo ei = getEntityInfo(entityClass);
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			EntityInfo<T> ei = getEntityInfo(entityClass);
 			return ctx.query(ei, "SELECT * FROM " + ei.table + " WHERE " + where, params);
 		} catch (Exception e) {
 			throw new StoreException(e);
@@ -85,9 +102,9 @@ public class Database {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends AbstractEntity> void insert(T... entities) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
 			for (T entity : entities) {
-				EntityInfo ei = getEntityInfo(entity.getClass());
+				EntityInfo<T> ei = (EntityInfo<T>) getEntityInfo(entity.getClass());
 				ctx.executeUpdate(ei.insertSQL, ei.getInsertParams(entity));
 			}
 		} catch (Exception e) {
@@ -104,9 +121,9 @@ public class Database {
 	 *            The id list.
 	 */
 	public <T extends AbstractEntity> void delete(Class<T> clazz, String... ids) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
 			for (String id : ids) {
-				EntityInfo ei = getEntityInfo(clazz);
+				EntityInfo<T> ei = getEntityInfo(clazz);
 				ctx.executeUpdate(ei.deleteSQL, id);
 			}
 		} catch (RuntimeException e) {
@@ -124,9 +141,9 @@ public class Database {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends AbstractEntity> void delete(T... entities) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
 			for (T entity : entities) {
-				EntityInfo ei = getEntityInfo(entity.getClass());
+				EntityInfo<T> ei = (EntityInfo<T>) getEntityInfo(entity.getClass());
 				ctx.executeUpdate(ei.deleteSQL, entity.getId());
 			}
 		} catch (RuntimeException e) {
@@ -137,8 +154,8 @@ public class Database {
 	}
 
 	public <T extends AbstractEntity> void dropTable(Class<T> entityClass) {
-		EntityInfo ei = getEntityInfo(entityClass);
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+		EntityInfo<T> ei = getEntityInfo(entityClass);
+		try (ConnectionContext ctx = new ConnectionContext()) {
 			ctx.executeUpdate("DROP TABLE " + ei.table + " IF EXISTS");
 		} catch (RuntimeException e) {
 			throw e;
@@ -148,8 +165,8 @@ public class Database {
 	}
 
 	public <T extends AbstractEntity> void createTable(Class<T> entityClass) {
-		EntityInfo ei = getEntityInfo(entityClass);
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
+		EntityInfo<T> ei = getEntityInfo(entityClass);
+		try (ConnectionContext ctx = new ConnectionContext()) {
 			ctx.executeUpdate(ei.ddl);
 		} catch (RuntimeException e) {
 			throw e;
@@ -170,8 +187,8 @@ public class Database {
 	 * @return Number of deleted records.
 	 */
 	public <T extends AbstractEntity> int deleteBy(Class<T> clazz, String where, Object... params) {
-		try (ConnectionContext ctx = new ConnectionContext(openConnection())) {
-			EntityInfo ei = getEntityInfo(clazz);
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			EntityInfo<T> ei = getEntityInfo(clazz);
 			String sql = "DELETE FROM " + ei.table + " WHERE " + where;
 			return ctx.executeUpdate(sql, params);
 		} catch (RuntimeException e) {
@@ -181,7 +198,7 @@ public class Database {
 		}
 	}
 
-	Connection openConnection() {
+	static Connection openConnection() {
 		try {
 			return DriverManager.getConnection(jdbcConnectionUrl, "SA", "");
 		} catch (SQLException e) {
@@ -189,23 +206,24 @@ public class Database {
 		}
 	}
 
-	<T extends AbstractEntity> EntityInfo getEntityInfo(Class<T> clazz) {
+	@SuppressWarnings("unchecked")
+	<T extends AbstractEntity> EntityInfo<T> getEntityInfo(Class<T> clazz) {
 		String key = clazz.getName();
-		EntityInfo ei = entityCache.get(key);
+		EntityInfo<T> ei = (EntityInfo<T>) entityCache.get(key);
 		if (ei == null) {
-			ei = new EntityInfo(clazz);
+			ei = new EntityInfo<T>(clazz);
 			entityCache.put(key, ei);
 		}
 		return ei;
 	}
 
-	Map<String, EntityInfo> entityCache = new HashMap<String, EntityInfo>();
+	Map<String, EntityInfo<?>> entityCache = new HashMap<String, EntityInfo<?>>();
 
 }
 
-class EntityInfo implements RowMapper {
+class EntityInfo<T extends AbstractEntity> implements RowMapper<T> {
 
-	final Class<?> clazz;
+	final Class<T> clazz;
 	final String table;
 	final List<Property> properties;
 	final Property id;
@@ -213,7 +231,7 @@ class EntityInfo implements RowMapper {
 	final String deleteSQL;
 	final String ddl;
 
-	EntityInfo(Class<?> clazz) {
+	EntityInfo(Class<T> clazz) {
 		this.clazz = clazz;
 		this.table = getTableName(clazz);
 		this.properties = Arrays.stream(clazz.getFields()).map((f) -> {
@@ -245,7 +263,7 @@ class EntityInfo implements RowMapper {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T map(ResultSet rs) throws Exception {
+	public T map(ResultSet rs) throws Exception {
 		Object o = clazz.newInstance();
 		for (Property p : this.properties) {
 			String name = p.field.getName();
@@ -255,7 +273,7 @@ class EntityInfo implements RowMapper {
 		return (T) o;
 	}
 
-	<T extends AbstractEntity> Object[] getInsertParams(T entity) throws Exception {
+	Object[] getInsertParams(T entity) throws Exception {
 		Object[] params = new Object[this.properties.size()];
 		int n = 0;
 		for (Property prop : this.properties) {
@@ -265,7 +283,7 @@ class EntityInfo implements RowMapper {
 		return params;
 	}
 
-	private String getTableName(Class<?> clazz) {
+	private String getTableName(Class<T> clazz) {
 		Table t = clazz.getAnnotation(Table.class);
 		if (t != null && !t.name().isEmpty()) {
 			return t.name();
@@ -287,70 +305,15 @@ class EntityInfo implements RowMapper {
 
 }
 
-class Property {
-
-	final boolean isId;
-	final String name;
-	final Field field;
-	final String ddl;
-
-	Property(Field field) {
-		this.field = field;
-		this.name = field.getName();
-		this.isId = "id".equals(name);
-		final Class<?> type = this.field.getType();
-		String ddl = DATA_TYPES.get(type);
-		if (ddl == null) {
-			throw new IllegalArgumentException("Cannot find SQL type for Java type: " + type.getName());
-		}
-		ddl = this.name + " " + ddl;
-		int length = 255;
-		Column column = this.field.getAnnotation(Column.class);
-		if (column != null) {
-			length = column.length();
-			if (!column.columnDefinition().isEmpty()) {
-				ddl = column.columnDefinition();
-			}
-		}
-		if (String.class.equals(type)) {
-			ddl = ddl + "(" + length + ")";
-		}
-		boolean nullable = !isId && (column == null || column.nullable());
-		ddl = ddl + (nullable ? " NULL" : " NOT NULL");
-		ddl = ddl + (isId ? " PRIMARY KEY" : "");
-		this.ddl = ddl;
-	}
-
-	Object getValue(Object bean) throws Exception {
-		return field.get(bean);
-	}
-
-	void setValue(Object bean, Object value) throws Exception {
-		field.set(bean, value);
-	}
-
-	static final Map<Class<?>, String> DATA_TYPES = new HashMap<Class<?>, String>() {
-		{
-			put(String.class, "VARCHAR");
-			put(int.class, "INT");
-			put(Integer.class, "INT");
-			put(long.class, "BIGINT");
-			put(Long.class, "BIGINT");
-			put(boolean.class, "BOOLEAN");
-			put(Boolean.class, "BOOLEAN");
-		}
-	};
-}
-
 class ConnectionContext implements AutoCloseable {
 
-	final static Log log = LogFactory.getLog(ConnectionContext.class);
-	final static ThreadLocal<ConnectionResource> resource = new ThreadLocal<ConnectionResource>();
+	static final Log log = LogFactory.getLog(ConnectionContext.class);
+	static final ThreadLocal<ConnectionResource> resource = new ThreadLocal<ConnectionResource>();
 
-	public ConnectionContext(Connection conn) {
+	public ConnectionContext() {
 		ConnectionResource res = resource.get();
 		if (res == null) {
-			resource.set(new ConnectionResource(conn));
+			resource.set(new ConnectionResource(Database.openConnection()));
 		} else {
 			res.count++;
 		}
@@ -360,7 +323,7 @@ class ConnectionContext implements AutoCloseable {
 		return resource.get().connection;
 	}
 
-	<T> List<T> query(RowMapper mapper, String sql, Object... params) throws Exception {
+	<T> List<T> query(RowMapper<T> mapper, String sql, Object... params) throws Exception {
 		log.warn("SQL: " + sql);
 		try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
 			if (params.length > 0) {
@@ -423,11 +386,66 @@ class ConnectionResource {
 
 	ConnectionResource(Connection connection) {
 		this.connection = connection;
-		this.count = 0;
+		this.count = 1;
 		try {
 			this.connection.setAutoCommit(false);
 		} catch (SQLException e) {
 			throw new RuntimeException();
 		}
 	}
+}
+
+class Property {
+
+	final boolean isId;
+	final String name;
+	final Field field;
+	final String ddl;
+
+	Property(Field field) {
+		this.field = field;
+		this.name = field.getName();
+		this.isId = "id".equals(name);
+		final Class<?> type = this.field.getType();
+		String ddl = DATA_TYPES.get(type);
+		if (ddl == null) {
+			throw new IllegalArgumentException("Cannot find SQL type for Java type: " + type.getName());
+		}
+		ddl = this.name + " " + ddl;
+		int length = 255;
+		Column column = this.field.getAnnotation(Column.class);
+		if (column != null) {
+			length = column.length();
+			if (!column.columnDefinition().isEmpty()) {
+				ddl = column.columnDefinition();
+			}
+		}
+		if (String.class.equals(type)) {
+			ddl = ddl + "(" + length + ")";
+		}
+		boolean nullable = !isId && (column == null || column.nullable());
+		ddl = ddl + (nullable ? " NULL" : " NOT NULL");
+		ddl = ddl + (isId ? " PRIMARY KEY" : "");
+		this.ddl = ddl;
+	}
+
+	Object getValue(Object bean) throws Exception {
+		return field.get(bean);
+	}
+
+	void setValue(Object bean, Object value) throws Exception {
+		field.set(bean, value);
+	}
+
+	static final Map<Class<?>, String> DATA_TYPES = new HashMap<Class<?>, String>() {
+		{
+			put(String.class, "VARCHAR");
+			put(int.class, "INT");
+			put(Integer.class, "INT");
+			put(long.class, "BIGINT");
+			put(Long.class, "BIGINT");
+			put(boolean.class, "BOOLEAN");
+			put(Boolean.class, "BOOLEAN");
+		}
+	};
 }

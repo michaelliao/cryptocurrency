@@ -22,7 +22,12 @@ public class BitcoinFileManager {
 	final String baseDir;
 
 	private BitcoinFileManager() {
-		String path = new File(".").getAbsolutePath();
+		String path = null;
+		try {
+			path = new File(".").getCanonicalPath();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		File baseDir = new File(path, "bitcoin.datastore");
 		if (!baseDir.isDirectory()) {
 			if (!baseDir.mkdir()) {
@@ -31,6 +36,7 @@ public class BitcoinFileManager {
 			}
 		}
 		this.baseDir = baseDir.getAbsolutePath();
+		log.info("Set current data dir: " + this.baseDir);
 	}
 
 	public File getFile(String relativePath) {

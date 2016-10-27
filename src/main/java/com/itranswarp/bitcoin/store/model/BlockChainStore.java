@@ -1,12 +1,22 @@
 package com.itranswarp.bitcoin.store.model;
 
-public class BlockChainStore implements AutoCloseable {
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-	public BlockChainStore() {
-		//
+import com.itranswarp.bitcoin.message.BlockMessage;
+import com.itranswarp.bitcoin.store.Database;
+
+public class BlockChainStore {
+
+	final Log log = LogFactory.getLog(getClass());
+	final Database database;
+
+	public BlockChainStore(String dbfile) {
+		log.info("Using block chain db: " + dbfile);
+		this.database = Database.init(dbfile);
 	}
 
-	public void addBlock() {
+	public void addBlock(BlockMessage msg) {
 		//
 	}
 
@@ -22,9 +32,4 @@ public class BlockChainStore implements AutoCloseable {
 		return 0;
 	}
 
-	@Override
-	public void close() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
 }

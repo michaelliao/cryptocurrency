@@ -61,7 +61,11 @@ public class BitcoinPeer implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws IOException {
-		fileManager.writeFile(ACTIVE_NODES_CACHE, JsonUtil.toJson(activeNodes));
+	public void close() {
+		try {
+			fileManager.writeFile(ACTIVE_NODES_CACHE, JsonUtil.toJson(activeNodes));
+		} catch (IOException e) {
+			log.error("Write file failed.", e);
+		}
 	}
 }

@@ -2,7 +2,7 @@ package com.itranswarp.bitcoin.store;
 
 import java.sql.ResultSet;
 
-public interface RowMapper {
+public interface RowMapper<T> {
 
-	<T> T map(ResultSet rs) throws Exception;
+	T map(ResultSet rs) throws Exception;
 }
