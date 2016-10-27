@@ -2,6 +2,10 @@ package com.itranswarp.bitcoin.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
@@ -17,6 +21,10 @@ import com.itranswarp.bitcoin.util.HashUtils;
  * @author liaoxuefeng
  */
 public class BlockMessage extends Message {
+
+	static final Log log = LogFactory.getLog(BlockMessage.class);
+
+	private byte[] blockHash = null;
 
 	public Header header;
 	public Transaction[] txns;
@@ -49,7 +57,30 @@ public class BlockMessage extends Message {
 		return output.toByteArray();
 	}
 
-	public byte[] calculateMerkleRoot() {
+	/**
+	 * Validate block hash.
+	 */
+	public boolean validateHash() {
+		byte[] merkleHash = calculateMerkleHash();
+		if (!Arrays.equals(merkleHash, this.header.merkleHash)) {
+			log.error("Validate merckle hash failed.");
+			return false;
+		}
+		byte[] blockHash = getBlockHash();
+		return true;
+	}
+
+	public byte[] getBlockHash() {
+		if (this.blockHash == null) {
+			byte[] data = new BitcoinOutput().writeInt(this.header.version).write(this.header.prevHash)
+					.write(this.header.merkleHash).writeUnsignedInt(this.header.timestamp)
+					.writeUnsignedInt(this.header.bits).writeUnsignedInt(this.header.nonce).toByteArray();
+			this.blockHash = HashUtils.doubleSha256(data);
+		}
+		return this.blockHash;
+	}
+
+	byte[] calculateMerkleHash() {
 		byte[][] hashes = java.util.Arrays.asList(this.txns).stream().map((tx) -> {
 			return tx.calculateHash();
 		}).toArray(byte[][]::new);

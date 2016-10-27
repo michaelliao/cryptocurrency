@@ -112,11 +112,11 @@ public class Main {
 
 	private static boolean processBlock(BlockMessage block) {
 		log.info("Process block...");
-		byte[] merckleHash = block.calculateMerkleRoot();
-		if (!Arrays.equals(merckleHash, block.header.merkleHash)) {
-			log.error("Validate merckle hash failed.");
-			return false;
-		}
+		// byte[] merckleHash = block.calculateMerkleRoot();
+		// if (!Arrays.equals(merckleHash, block.header.merkleHash)) {
+		// log.error("Validate merckle hash failed.");
+		// return false;
+		// }
 		return true;
 	}
 }

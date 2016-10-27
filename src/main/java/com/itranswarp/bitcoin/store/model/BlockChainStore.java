@@ -32,4 +32,9 @@ public class BlockChainStore {
 		return 0;
 	}
 
+	public String getLastBlockHash() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

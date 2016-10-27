@@ -8,8 +8,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,28 +26,25 @@ import com.itranswarp.bitcoin.message.PingMessage;
 import com.itranswarp.bitcoin.message.PongMessage;
 import com.itranswarp.bitcoin.message.VerAckMessage;
 import com.itranswarp.bitcoin.message.VersionMessage;
+import com.itranswarp.bitcoin.store.model.BlockChainStore;
 import com.itranswarp.bitcoin.struct.InvVect;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class PeerThread extends Thread {
 
 	private final Log log = LogFactory.getLog(PeerThread.class);
 
+	private BlockChainStore store;
+
 	private final Queue<BlockMessage> queue;
 
 	private volatile boolean running = true;
 
-	private byte[] lastBlockHash = null;
+	private Map<String, byte[]> pendingBlockHashes = new ConcurrentHashMap<>();
 
-	public PeerThread(Queue<BlockMessage> queue) {
+	public PeerThread(BlockChainStore store, Queue<BlockMessage> queue) {
+		this.store = store;
 		this.queue = queue;
-	}
-
-	synchronized byte[] getLastBlockHash() {
-		return this.lastBlockHash;
-	}
-
-	public synchronized void setLastBlockHash(byte[] lastBlockHash) {
-		this.lastBlockHash = lastBlockHash;
 	}
 
 	public void stopPeer() {
@@ -104,10 +102,10 @@ public class PeerThread extends Thread {
 							log.info("=> " + resp);
 							output.write(resp.toByteArray());
 						} else {
-							byte[] lastBlockHash = getLastBlockHash();
-							if (lastBlockHash != null) {
-								setLastBlockHash(null);
-								Message blks = new GetBlocksMessage(lastBlockHash, BitcoinConstants.ZERO_HASH);
+							if (this.pendingBlockHashes.isEmpty()) {
+								Message blks = new GetBlocksMessage(
+										HashUtils.toBytesAsLittleEndian(this.store.getLastBlockHash()),
+										BitcoinConstants.ZERO_HASH);
 								log.info("=> " + blks);
 								output.write(blks.toByteArray());
 							}
@@ -129,25 +127,23 @@ public class PeerThread extends Thread {
 			InvMessage inv = (InvMessage) msg;
 			byte[][] hashes = inv.getBlockHashes();
 			if (hashes.length > 0) {
+				for (byte[] hash : hashes) {
+					this.pendingBlockHashes.put(HashUtils.toHexStringAsLittleEndian(hash), hash);
+				}
 				return new GetDataMessage(InvVect.MSG_BLOCK, hashes);
 			}
 		}
 		if (msg instanceof BlockMessage) {
+			log.info("Process block...");
 			BlockMessage block = (BlockMessage) msg;
-			if (validateBlock(block)) {
+			if (block.validateHash()) {
+				this.pendingBlockHashes.remove(HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
 				this.queue.add(block);
+			} else {
+				log.error("Validate merckle hash failed.");
 			}
 		}
 		return null;
 	}
 
-	private boolean validateBlock(BlockMessage block) {
-		log.info("Process block...");
-		byte[] merckleHash = block.calculateMerkleRoot();
-		if (!Arrays.equals(merckleHash, block.header.merkleHash)) {
-			log.error("Validate merckle hash failed.");
-			return false;
-		}
-		return true;
-	}
 }

@@ -13,15 +13,17 @@ import com.itranswarp.bitcoin.store.model.BlockChainStore;
 public class BitcoinApp {
 
 	final Log log = LogFactory.getLog(BitcoinApp.class);
-	final Queue<BlockMessage> queue = new LinkedBlockingQueue<>();
+	final Queue<BlockMessage> queue;
+	final BlockChainStore store;
 
 	private BitcoinApp() {
+		String dbfile = BitcoinFileManager.getInstance().getFile("chain.db").getAbsolutePath();
+		this.store = new BlockChainStore(dbfile);
+		this.queue = new LinkedBlockingQueue<>();
 	}
 
 	public void run() {
-		String dbfile = BitcoinFileManager.getInstance().getFile("chain.db").getAbsolutePath();
-		BlockChainStore store = new BlockChainStore(dbfile);
-		PeerThread peerThread = new PeerThread(this.queue);
+		PeerThread peerThread = new PeerThread(this.store, this.queue);
 
 	}
 
