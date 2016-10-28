@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.Column;
@@ -22,28 +24,49 @@ import javax.persistence.Transient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.itranswarp.bitcoin.store.model.BlockEntity;
+import com.itranswarp.bitcoin.store.model.TxEntity;
+import com.itranswarp.bitcoin.store.model.UtxoEntity;
+
 public class Database {
 
-	static String jdbcConnectionUrl;
+	static final Log log = LogFactory.getLog(Database.class);
 
-	public static Database init(String dbFile) {
-		jdbcConnectionUrl = "jdbc:hsqldb:file:" + dbFile;
-		try (ConnectionContext ctx = new ConnectionContext()) {
-			// this.createTable(BlockEntity.class);
-			try (ConnectionContext ctx2 = new ConnectionContext()) {
-			}
+	private static String jdbcConnectionUrl = null;
+
+	@SuppressWarnings("unchecked")
+	private static final Class<AbstractEntity>[] ENTITY_CLASSES = new Class[] { BlockEntity.class, TxEntity.class,
+			UtxoEntity.class };
+
+	public static synchronized Database init(String dbFile) {
+		if (jdbcConnectionUrl != null) {
+			throw new RuntimeException("Database already initialized.");
 		}
+		jdbcConnectionUrl = "jdbc:hsqldb:file:" + dbFile;
+		// get table names:
+		Set<String> names = new HashSet<>();
 		try (ConnectionContext ctx = new ConnectionContext()) {
 			DatabaseMetaData meta = ConnectionContext.getConnection().getMetaData();
-			ResultSet rs = meta.getTables(null, null, "%", new String[] { "TABLE" });
-			while (rs.next()) {
-				String name = rs.getString(3);
-				System.out.println("> " + name);
+			try (ResultSet rs = meta.getTables(null, null, "%", new String[] { "TABLE" })) {
+				while (rs.next()) {
+					String name = rs.getString(3);
+					log.info("Found table: " + name);
+					names.add(name.toLowerCase());
+				}
 			}
 		} catch (Exception e) {
 			throw new StoreException(e);
 		}
-		return new Database();
+		Database db = new Database();
+		// check if all tables exists:
+		for (Class<AbstractEntity> entityClass : ENTITY_CLASSES) {
+			EntityInfo<?> ei = db.getEntityInfo(entityClass);
+			if (!names.contains(ei.table.toLowerCase())) {
+				log.info("Create table for entity: " + entityClass.getSimpleName());
+				db.createTable(entityClass);
+			}
+		}
+		return db;
 	}
 
 	/**
@@ -84,10 +107,34 @@ public class Database {
 		return list.get(0);
 	}
 
+	public <T extends AbstractEntity> int queryForInt(Class<T> entityClass, String aggr, String where,
+			Object... params) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			EntityInfo<T> ei = getEntityInfo(entityClass);
+			List<Number> list = ctx.query(numberMapper,
+					"SELECT " + aggr + " FROM " + ei.table + (where == null ? "" : (" WHERE " + where)), params);
+			Number number = list.get(0);
+			return number.intValue();
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
+	}
+
 	public <T extends AbstractEntity> List<T> queryForList(Class<T> entityClass, String where, Object... params) {
 		try (ConnectionContext ctx = new ConnectionContext()) {
 			EntityInfo<T> ei = getEntityInfo(entityClass);
-			return ctx.query(ei, "SELECT * FROM " + ei.table + " WHERE " + where, params);
+			return ctx.query(ei, "SELECT * FROM " + ei.table + (where == null ? "" : (" WHERE " + where)), params);
+		} catch (Exception e) {
+			throw new StoreException(e);
+		}
+	}
+
+	public <T extends AbstractEntity> List<T> queryForList(Class<T> entityClass, String where, String orderBy,
+			Object... params) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			EntityInfo<T> ei = getEntityInfo(entityClass);
+			return ctx.query(ei, "SELECT * FROM " + ei.table + (where == null ? "" : (" WHERE " + where))
+					+ (orderBy == null ? "" : " ORDER BY " + orderBy), params);
 		} catch (Exception e) {
 			throw new StoreException(e);
 		}
@@ -219,6 +266,12 @@ public class Database {
 
 	Map<String, EntityInfo<?>> entityCache = new HashMap<String, EntityInfo<?>>();
 
+	final RowMapper<Number> numberMapper = new RowMapper<Number>() {
+		@Override
+		public Number map(ResultSet rs) throws Exception {
+			return (Number) rs.getObject(1);
+		}
+	};
 }
 
 class EntityInfo<T extends AbstractEntity> implements RowMapper<T> {
@@ -425,7 +478,7 @@ class Property {
 		}
 		boolean nullable = !isId && (column == null || column.nullable());
 		ddl = ddl + (nullable ? " NULL" : " NOT NULL");
-		ddl = ddl + (isId ? " PRIMARY KEY" : "");
+		ddl = ddl + (isId ? " PRIMARY KEY" : (column != null && column.unique()) ? " UNIQUE" : "");
 		this.ddl = ddl;
 	}
 

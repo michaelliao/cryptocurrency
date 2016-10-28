@@ -47,7 +47,7 @@ public class Main {
 								log.info(":=> " + vmsg);
 								output.write(vmsg.toByteArray());
 								// receive msg:
-								byte[] firstBlock = BitcoinConstants.GENESIS_HASH;
+								byte[] firstBlock = BitcoinConstants.GENESIS_HASH_BYTES;
 								while (true) {
 									BitcoinInput in = new BitcoinInput(input);
 									Message msg = Message.Builder.parseMessage(in);
@@ -58,7 +58,7 @@ public class Main {
 										output.write(resp.toByteArray());
 									} else {
 										if (firstBlock != null) {
-											Message blks = new GetBlocksMessage(firstBlock, BitcoinConstants.ZERO_HASH);
+											Message blks = new GetBlocksMessage(firstBlock, BitcoinConstants.ZERO_HASH_BYTES);
 											log.info(":=> " + blks);
 											output.write(blks.toByteArray());
 											firstBlock = null;

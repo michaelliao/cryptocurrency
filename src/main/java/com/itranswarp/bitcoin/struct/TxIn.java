@@ -23,14 +23,6 @@ public class TxIn {
 		this.sequence = input.readUnsignedInt();
 	}
 
-	public OutPoint getPreviousOutput() {
-		return previousOutput;
-	}
-
-	public void setPreviousOutput(OutPoint previousOutput) {
-		this.previousOutput = previousOutput;
-	}
-
 	public boolean isCoinbase() {
 		return this.previousOutput != null && this.previousOutput.hash != null
 				&& BytesUtils.isZeros(this.previousOutput.hash);

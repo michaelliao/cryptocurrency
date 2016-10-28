@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.itranswarp.bitcoin.store.AbstractEntity;
@@ -19,11 +20,15 @@ import com.itranswarp.bitcoin.store.StoreException;
 
 public class DatabaseTest {
 
-	Database database;
+	static Database database = null;
+
+	@BeforeClass
+	public static void setUpClass() {
+		database = Database.init("test.db");
+	}
 
 	@Before
 	public void setUp() {
-		database = Database.init("test.db");
 		database.dropTable(TestEntity.class);
 		database.createTable(TestEntity.class);
 	}
@@ -39,6 +44,16 @@ public class DatabaseTest {
 		TestEntity t = newTestEntity("xyz-123", "Bob", null, 0);
 		database.insert(t);
 		assertNotNull(t.getId());
+	}
+
+	@Test
+	public void testQueryForInt() {
+		assertEquals(0, database.queryForInt(TestEntity.class, "count(*)", null));
+		TestEntity t = newTestEntity("xyz-123", "Bob", null, 0);
+		database.insert(t);
+		assertNotNull(t.getId());
+		assertEquals(1, database.queryForInt(TestEntity.class, "count(*)", null));
+		assertEquals(1, database.queryForInt(TestEntity.class, "count(*)", "hashId=?", "xyz-123"));
 	}
 
 	@Test
@@ -119,7 +134,7 @@ class TestEntity extends AbstractEntity {
 	@Id
 	public String hashId;
 
-	@Column(length = 100, nullable = false)
+	@Column(length = 100, nullable = false, unique = true)
 	public String name;
 
 	@Column

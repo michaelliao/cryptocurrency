@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.io.BitcoinFileManager;
 import com.itranswarp.bitcoin.message.BlockMessage;
-import com.itranswarp.bitcoin.store.model.BlockChainStore;
+import com.itranswarp.bitcoin.store.BlockChainStore;
 
 public class BitcoinApp {
 

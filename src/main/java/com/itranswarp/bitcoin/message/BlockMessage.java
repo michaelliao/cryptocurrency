@@ -67,6 +67,7 @@ public class BlockMessage extends Message {
 			return false;
 		}
 		byte[] blockHash = getBlockHash();
+		// TODO: validate bits:
 		return true;
 	}
 
@@ -82,7 +83,7 @@ public class BlockMessage extends Message {
 
 	byte[] calculateMerkleHash() {
 		byte[][] hashes = java.util.Arrays.asList(this.txns).stream().map((tx) -> {
-			return tx.calculateHash();
+			return tx.getTxHash();
 		}).toArray(byte[][]::new);
 		while (hashes.length > 1) {
 			hashes = merkleHash(hashes);

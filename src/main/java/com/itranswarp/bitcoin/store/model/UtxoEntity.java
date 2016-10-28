@@ -2,14 +2,16 @@ package com.itranswarp.bitcoin.store.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 import com.itranswarp.bitcoin.store.AbstractEntity;
 
 @Entity
 public class UtxoEntity extends AbstractEntity {
 
+	@Id
 	@Column(length = 40)
-	public String utxoHash;
+	public String txHash;
 
 	@Column(length = 32)
 	public String blockId;
@@ -19,7 +21,7 @@ public class UtxoEntity extends AbstractEntity {
 
 	@Override
 	public String getId() {
-		return this.utxoHash;
+		return this.txHash;
 	}
 
 }

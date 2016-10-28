@@ -119,7 +119,7 @@ public class Block {
 	@JsonSerialize(using = HashSerializer.class)
 	public byte[] getMerkleRoot() {
 		Bytes[] hashes = java.util.Arrays.asList(txs).stream().map((tx) -> {
-			byte[] bs = tx.getHash();
+			byte[] bs = tx.getTxHash();
 			return new Bytes(bs);
 		}).toArray(Bytes[]::new);
 		while (hashes.length > 1) {
@@ -130,7 +130,7 @@ public class Block {
 
 	public byte[] calculateMerkleRoot() {
 		Bytes[] hashes = java.util.Arrays.asList(txs).stream().map((tx) -> {
-			byte[] bs = tx.getHash();
+			byte[] bs = tx.getTxHash();
 			return new Bytes(bs);
 		}).toArray(Bytes[]::new);
 		while (hashes.length > 1) {

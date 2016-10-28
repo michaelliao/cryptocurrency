@@ -26,7 +26,7 @@ import com.itranswarp.bitcoin.message.PingMessage;
 import com.itranswarp.bitcoin.message.PongMessage;
 import com.itranswarp.bitcoin.message.VerAckMessage;
 import com.itranswarp.bitcoin.message.VersionMessage;
-import com.itranswarp.bitcoin.store.model.BlockChainStore;
+import com.itranswarp.bitcoin.store.BlockChainStore;
 import com.itranswarp.bitcoin.struct.InvVect;
 import com.itranswarp.bitcoin.util.HashUtils;
 
@@ -105,7 +105,7 @@ public class PeerThread extends Thread {
 							if (this.pendingBlockHashes.isEmpty()) {
 								Message blks = new GetBlocksMessage(
 										HashUtils.toBytesAsLittleEndian(this.store.getLastBlockHash()),
-										BitcoinConstants.ZERO_HASH);
+										BitcoinConstants.ZERO_HASH_BYTES);
 								log.info("=> " + blks);
 								output.write(blks.toByteArray());
 							}
@@ -136,12 +136,8 @@ public class PeerThread extends Thread {
 		if (msg instanceof BlockMessage) {
 			log.info("Process block...");
 			BlockMessage block = (BlockMessage) msg;
-			if (block.validateHash()) {
-				this.pendingBlockHashes.remove(HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
-				this.queue.add(block);
-			} else {
-				log.error("Validate merckle hash failed.");
-			}
+			this.pendingBlockHashes.remove(HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
+			this.queue.add(block);
 		}
 		return null;
 	}

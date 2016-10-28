@@ -28,6 +28,8 @@ public class Transaction {
 	// lock_time is irrelevant. Otherwise, the transaction may not be added to a
 	// block until after lock_time (see NLockTime).
 
+	private byte[] txHash = null;
+
 	public Transaction(BitcoinInput input) throws IOException {
 		this.version = input.readInt();
 		long tx_in_count = input.readVarInt(); // do not store count
@@ -44,12 +46,11 @@ public class Transaction {
 	}
 
 	@JsonSerialize(using = HashSerializer.class)
-	public byte[] getHash() {
-		return HashUtils.doubleSha256(this.toByteArray());
-	}
-
-	public byte[] calculateHash() {
-		return HashUtils.doubleSha256(this.toByteArray());
+	public byte[] getTxHash() {
+		if (this.txHash == null) {
+			this.txHash = HashUtils.doubleSha256(this.toByteArray());
+		}
+		return this.txHash;
 	}
 
 	public byte[] toByteArray() {
