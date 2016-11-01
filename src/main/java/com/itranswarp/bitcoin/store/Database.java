@@ -147,10 +147,14 @@ public class Database {
 	 * @param entities
 	 *            The entities.
 	 */
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractEntity> void insert(T... entities) {
+	public <T extends AbstractEntity> void insert(@SuppressWarnings("unchecked") T... entities) {
+		insert(Arrays.asList(entities));
+	}
+
+	public <T extends AbstractEntity> void insert(List<T> list) {
 		try (ConnectionContext ctx = new ConnectionContext()) {
-			for (T entity : entities) {
+			for (T entity : list) {
+				@SuppressWarnings("unchecked")
 				EntityInfo<T> ei = (EntityInfo<T>) getEntityInfo(entity.getClass());
 				ctx.executeUpdate(ei.insertSQL, ei.getInsertParams(entity));
 			}
@@ -186,10 +190,14 @@ public class Database {
 	 * @param entities
 	 *            The entities.
 	 */
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractEntity> void delete(T... entities) {
+	public <T extends AbstractEntity> void delete(@SuppressWarnings("unchecked") T... entities) {
+		delete(Arrays.asList(entities));
+	}
+
+	public <T extends AbstractEntity> void delete(List<T> list) {
 		try (ConnectionContext ctx = new ConnectionContext()) {
-			for (T entity : entities) {
+			for (T entity : list) {
+				@SuppressWarnings("unchecked")
 				EntityInfo<T> ei = (EntityInfo<T>) getEntityInfo(entity.getClass());
 				ctx.executeUpdate(ei.deleteSQL, entity.getId());
 			}
@@ -197,6 +205,12 @@ public class Database {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	public void transactional(Runnable runnable) {
+		try (ConnectionContext ctx = new ConnectionContext()) {
+			runnable.run();
 		}
 	}
 
@@ -276,6 +290,8 @@ public class Database {
 
 class EntityInfo<T extends AbstractEntity> implements RowMapper<T> {
 
+	final Log log = LogFactory.getLog(getClass());
+
 	final Class<T> clazz;
 	final String table;
 	final List<Property> properties;
@@ -301,10 +317,10 @@ class EntityInfo<T extends AbstractEntity> implements RowMapper<T> {
 			return new Property(f);
 		}).toArray(Property[]::new);
 		if (ids.length == 0) {
-			throw new IllegalArgumentException("@Id not found.");
+			throw new IllegalArgumentException("@Id not found in entity: " + clazz);
 		}
 		if (ids.length > 1) {
-			throw new IllegalArgumentException("Multiple @Id found.");
+			throw new IllegalArgumentException("Multiple @Id found in entity: " + clazz);
 		}
 		this.id = ids[0];
 		this.insertSQL = "INSERT INTO " + this.table + " (" + namesOf(this.properties) + ") VALUES ("
@@ -312,7 +328,7 @@ class EntityInfo<T extends AbstractEntity> implements RowMapper<T> {
 		this.deleteSQL = "DELETE FROM " + this.table + " WHERE " + this.id.name + " = ?";
 		this.ddl = "CREATE TABLE " + this.table + " (" + String.join(", ", this.properties.stream().map((p) -> {
 			return p.ddl;
-		}).collect(Collectors.toList())) + ")";
+		}).collect(Collectors.toList())) + ", PRIMARY KEY(" + this.id.name + "))";
 	}
 
 	@SuppressWarnings("unchecked")
@@ -377,7 +393,7 @@ class ConnectionContext implements AutoCloseable {
 	}
 
 	<T> List<T> query(RowMapper<T> mapper, String sql, Object... params) throws Exception {
-		log.warn("SQL: " + sql);
+		log.info("SQL: " + sql);
 		try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
 			if (params.length > 0) {
 				int n = 1;
@@ -397,7 +413,7 @@ class ConnectionContext implements AutoCloseable {
 	}
 
 	int executeUpdate(String sql, Object... params) throws SQLException {
-		log.warn("SQL: " + sql);
+		log.info("SQL: " + sql);
 		try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
 			if (params.length > 0) {
 				int n = 1;
@@ -458,7 +474,7 @@ class Property {
 	Property(Field field) {
 		this.field = field;
 		this.name = field.getName();
-		this.isId = "id".equals(name);
+		this.isId = field.isAnnotationPresent(Id.class);
 		final Class<?> type = this.field.getType();
 		String ddl = DATA_TYPES.get(type);
 		if (ddl == null) {
@@ -478,7 +494,7 @@ class Property {
 		}
 		boolean nullable = !isId && (column == null || column.nullable());
 		ddl = ddl + (nullable ? " NULL" : " NOT NULL");
-		ddl = ddl + (isId ? " PRIMARY KEY" : (column != null && column.unique()) ? " UNIQUE" : "");
+		ddl = ddl + (!isId && column != null && column.unique() ? " UNIQUE" : "");
 		this.ddl = ddl;
 	}
 

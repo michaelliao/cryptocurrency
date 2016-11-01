@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import com.itranswarp.bitcoin.BitcoinConstants;
 import com.itranswarp.bitcoin.message.BlockMessage;
 import com.itranswarp.bitcoin.store.model.BlockEntity;
+import com.itranswarp.bitcoin.store.model.StxoEntity;
 import com.itranswarp.bitcoin.store.model.TxEntity;
 import com.itranswarp.bitcoin.store.model.UtxoEntity;
 import com.itranswarp.bitcoin.struct.TxIn;
@@ -47,75 +48,16 @@ public class BlockChainStore {
 		}
 		final int height = database.queryForInt(BlockEntity.class, "count(*)", null);
 		final String blockHash = HashUtils.toHexStringAsLittleEndian(msg.getBlockHash());
-		log.info("Add block #" + height + ": " + blockHash);
+		log.info("Check block #" + height + ": " + blockHash + "...");
 		// check prev block:
+		final String prevHash = height == 0 ? BitcoinConstants.ZERO_HASH
+				: HashUtils.toHexStringAsLittleEndian(msg.header.prevHash);
 		if (height != 0) {
-			final String prevHash = HashUtils.toHexStringAsLittleEndian(msg.header.prevHash);
 			BlockEntity lastBlock = getLastBlock();
 			if (lastBlock == null) {
 				throw new ValidateException("prevHash not found.");
 			}
-			if (lastBlock.blockHash.equals(prevHash)) {
-				// add as last block:
-				BlockEntity block = new BlockEntity();
-				block.blockHeight = height;
-				block.blockHash = blockHash;
-				block.previousHash = prevHash;
-				block.bits = msg.header.bits;
-				block.nonce = msg.header.nonce;
-				block.timestamp = msg.header.timestamp;
-				block.merkleHash = HashUtils.toHexStringAsLittleEndian(msg.header.merkleHash);
-				block.numOfTx = msg.txns.length;
-
-				// process tx in this block:
-				List<TxEntity> txs = new ArrayList<TxEntity>();
-				List<TxIn> txins = new ArrayList<TxIn>();
-				List<TxOut> txouts = new ArrayList<TxOut>();
-				List<UtxoEntity> spendTxos = new ArrayList<UtxoEntity>();
-				List<UtxoEntity> unspendTxos = new ArrayList<UtxoEntity>();
-				AtomicBoolean coinBase = new AtomicBoolean(false);
-				Arrays.stream(msg.txns).forEach((tx) -> {
-					TxEntity txe = new TxEntity();
-					txe.txHash = HashUtils.toHexStringAsLittleEndian(tx.getTxHash());
-					txe.inputs = tx.tx_ins.length;
-					txe.outputs = tx.tx_outs.length;
-					txe.blockHash = blockHash;
-					txe.version = tx.version;
-					txe.lockTime = tx.lock_time;
-					txs.add(txe);
-
-					// check txin:
-					AtomicLong inAmount = new AtomicLong(0);
-					AtomicLong outAmount = new AtomicLong(0);
-					Arrays.stream(tx.tx_ins).forEach((txin) -> {
-						String utxoHash = HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash);
-						if (utxoHash.equals(BitcoinConstants.ZERO_HASH)) {
-							// coin base:
-							if (coinBase.get()) {
-								throw new ValidateException("Multiple coin base input.");
-							}
-							coinBase.set(true);
-						} else {
-							UtxoEntity utxo = this.database.getById(UtxoEntity.class, utxoHash);
-							if (utxo == null) {
-								throw new ValidateException("previous output not found: " + utxoHash);
-							}
-							spendTxos.add(utxo);
-							inAmount.addAndGet(utxo.amount);
-						}
-					});
-					// check txout:
-					Arrays.stream(tx.tx_outs).forEach((txout) -> {
-						UtxoEntity utxo = new UtxoEntity();
-						utxo.blockId = blockHash;
-						utxo.txHash = txe.txHash;
-						utxo.amount = txout.value;
-						unspendTxos.add(utxo);
-						outAmount.addAndGet(utxo.amount);
-					});
-				});
-				database.insert(block);
-			} else {
+			if (!lastBlock.blockHash.equals(prevHash)) {
 				log.warn("prevHash not match last block.");
 				// check:
 				BlockEntity target = database.getById(BlockEntity.class, prevHash);
@@ -124,12 +66,109 @@ public class BlockChainStore {
 				}
 				// block chain may forking:
 				log.warn("block chain may forking!");
+				throw new ValidateException("block chain may forking!");
 			}
 		}
+		// add as last block:
+		BlockEntity block = new BlockEntity();
+		block.blockHeight = height;
+		block.blockHash = blockHash;
+		block.previousHash = prevHash;
+		block.bits = msg.header.bits;
+		block.nonce = msg.header.nonce;
+		block.timestamp = msg.header.timestamp;
+		block.merkleHash = HashUtils.toHexStringAsLittleEndian(msg.header.merkleHash);
+		block.numOfTx = msg.txns.length;
+
+		// process tx in this block:
+		List<TxEntity> txs = new ArrayList<TxEntity>();
+		List<TxIn> txins = new ArrayList<TxIn>();
+		List<TxOut> txouts = new ArrayList<TxOut>();
+		List<UtxoEntity> spendTxos = new ArrayList<UtxoEntity>();
+		List<UtxoEntity> unspendTxos = new ArrayList<UtxoEntity>();
+		AtomicBoolean foundCoinBase = new AtomicBoolean(false);
+		Arrays.stream(msg.txns).forEach((tx) -> {
+			final long coinBaseAward = 50_00000000L;
+			final String txHash = HashUtils.toHexStringAsLittleEndian(tx.getTxHash());
+
+			// check txin:
+			AtomicLong inAmount = new AtomicLong(0);
+			AtomicLong outAmount = new AtomicLong(0);
+			Arrays.stream(tx.tx_ins).forEach((txin) -> {
+				String utxoHash = HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash);
+				if (utxoHash.equals(BitcoinConstants.ZERO_HASH)) {
+					// coin base:
+					if (foundCoinBase.get()) {
+						throw new ValidateException("Multiple coin base input.");
+					}
+					foundCoinBase.set(true);
+					inAmount.addAndGet(coinBaseAward);
+				} else {
+					log.info("UTXO: " + utxoHash + ", " + txin.previousOutput.index);
+					UtxoEntity utxo = this.database.getById(UtxoEntity.class,
+							utxoHash + "#" + txin.previousOutput.index);
+					spendTxos.add(utxo);
+					inAmount.addAndGet(utxo.amount);
+				}
+			});
+
+			// check txout:
+			AtomicLong outIndex = new AtomicLong(0L);
+			Arrays.stream(tx.tx_outs).forEach((txout) -> {
+				UtxoEntity utxo = new UtxoEntity();
+				utxo.blockHash = blockHash;
+				utxo.txHash = txHash + "#" + outIndex.getAndIncrement();
+				utxo.amount = txout.value;
+				unspendTxos.add(utxo);
+				outAmount.addAndGet(utxo.amount);
+			});
+
+			// check total:
+			if (inAmount.longValue() != outAmount.longValue()) {
+				throw new ValidateException("Invalid balance.");
+			}
+
+			// create tx entity:
+			TxEntity txe = new TxEntity();
+			txe.txHash = HashUtils.toHexStringAsLittleEndian(tx.getTxHash());
+			txe.inputs = tx.tx_ins.length;
+			txe.outputs = tx.tx_outs.length;
+			txe.blockHash = blockHash;
+			txe.version = tx.version;
+			txe.lockTime = tx.lock_time;
+			txe.payload = HashUtils.toHexString(tx.toByteArray());
+			txs.add(txe);
+		});
+		database.transactional(() -> {
+			// add block, txs, unspendTxos:
+			log.info("Adding block: " + blockHash);
+			database.insert(block);
+			log.info("Adding txs: " + String.join(", ", txs.stream().map((tx) -> {
+				return tx.txHash;
+			}).collect(Collectors.toList())));
+			database.insert(txs);
+			log.info("Adding utxos: " + String.join(", ", unspendTxos.stream().map((utxo) -> {
+				return utxo.txHash;
+			}).collect(Collectors.toList())));
+			database.insert(unspendTxos);
+			// remove spendTxos:
+			log.info("Removing utxos: " + String.join(", ", spendTxos.stream().map((utxo) -> {
+				return utxo.txHash;
+			}).collect(Collectors.toList())));
+			database.insert(spendTxos.stream().map((utxo) -> {
+				StxoEntity stxo = new StxoEntity();
+				stxo.txHash = utxo.txHash;
+				stxo.blockHash = utxo.blockHash;
+				stxo.amount = utxo.amount;
+				return stxo;
+			}).collect(Collectors.toList()));
+			database.delete(spendTxos);
+		});
+		log.info("Added block #" + height + ": " + blockHash + ".");
 	}
 
 	public BlockEntity getLastBlock() {
-		List<BlockEntity> entities = database.queryForList(BlockEntity.class, null, "height desc limit 1");
+		List<BlockEntity> entities = database.queryForList(BlockEntity.class, null, "blockHeight DESC LIMIT 1");
 		if (entities.isEmpty()) {
 			return null;
 		}
@@ -139,18 +178,6 @@ public class BlockChainStore {
 	public String getLastBlockHash() {
 		BlockEntity block = getLastBlock();
 		return block == null ? BitcoinConstants.GENESIS_HASH : block.blockHash;
-	}
-
-	public void removeBlock() {
-		//
-	}
-
-	public BlockEntity getLatestBlock() {
-		return null;
-	}
-
-	public long getUtxoAmount() {
-		return 0;
 	}
 
 }

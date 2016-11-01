@@ -7,10 +7,10 @@ import javax.persistence.Id;
 import com.itranswarp.bitcoin.store.AbstractEntity;
 
 @Entity
-public class UtxoEntity extends AbstractEntity {
+public class StxoEntity extends AbstractEntity {
 
 	/**
-	 * UTXO id like
+	 * STXO id like
 	 * "591e91f809d716912ca1d4a9295e70c3e78bab077683f79350f101da64588073#1"
 	 */
 	@Id

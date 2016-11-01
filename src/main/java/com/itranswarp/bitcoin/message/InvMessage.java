@@ -57,8 +57,9 @@ public class InvMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "InvMessage([" + String.join(", ", Arrays.stream(this.inventory).map((inv) -> {
-			return inv.type + ":" + HashUtils.toHexStringAsLittleEndian(inv.hash);
-		}).toArray(String[]::new)) + "])";
+		return "InvMessage(" + this.inventory.length + ": ["
+				+ String.join(", ", Arrays.stream(this.inventory).map((inv) -> {
+					return inv.type + ":" + HashUtils.toHexStringAsLittleEndian(inv.hash);
+				}).limit(10).toArray(String[]::new)) + "])";
 	}
 }

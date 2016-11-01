@@ -13,28 +13,28 @@ public class BlockEntity extends AbstractEntity {
 	@Column(length = HASH32_LENGTH)
 	public String blockHash;
 
-	@Column(length = HASH32_LENGTH, unique = true)
+	@Column(nullable = false, length = HASH32_LENGTH, unique = true)
 	public String previousHash;
 
-	@Column(length = HASH32_LENGTH, unique = true)
+	@Column(nullable = false, length = HASH32_LENGTH, unique = true)
 	public String merkleHash;
 
-	@Column(unique = true)
+	@Column(nullable = false, unique = true)
 	public long blockHeight;
 
-	@Column
+	@Column(nullable = false)
 	public long numOfTx;
 
-	@Column
+	@Column(nullable = false)
 	public long timestamp;
 
-	@Column
+	@Column(nullable = false)
 	public long difficulty;
 
-	@Column
+	@Column(nullable = false)
 	public long bits;
 
-	@Column
+	@Column(nullable = false)
 	public long nonce;
 
 	@Override

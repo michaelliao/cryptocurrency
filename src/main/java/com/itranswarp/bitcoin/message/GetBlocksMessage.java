@@ -55,9 +55,11 @@ public class GetBlocksMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "GetBlocksMessage([" + String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
-			return HashUtils.toHexStringAsLittleEndian(hash);
-		}).toArray(String[]::new)) + "], hashStop=" + HashUtils.toHexStringAsLittleEndian(this.hashStop) + ")";
+		return "GetBlocksMessage(" + this.hashes.length + ": ["
+				+ String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
+					return HashUtils.toHexStringAsLittleEndian(hash);
+				}).limit(10).toArray(String[]::new)) + "], hashStop="
+				+ HashUtils.toHexStringAsLittleEndian(this.hashStop) + ")";
 	}
 
 }

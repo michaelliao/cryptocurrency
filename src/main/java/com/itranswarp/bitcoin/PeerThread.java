@@ -86,14 +86,15 @@ public class PeerThread extends Thread {
 		// try connect:
 		log.info("Try connect to node: " + node);
 		try (Socket sock = new Socket()) {
-			sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 3000);
+			sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 5000);
+			sock.setSoTimeout(60000);
 			try (InputStream input = sock.getInputStream()) {
 				try (OutputStream output = sock.getOutputStream()) {
 					VersionMessage vmsg = new VersionMessage(0, sock.getInetAddress());
 					log.info("=> " + vmsg);
 					output.write(vmsg.toByteArray());
 					// receive msg:
-					while (true) {
+					while (this.running) {
 						BitcoinInput in = new BitcoinInput(input);
 						Message msg = Message.Builder.parseMessage(in);
 						log.info("<= " + msg);
@@ -134,7 +135,7 @@ public class PeerThread extends Thread {
 			}
 		}
 		if (msg instanceof BlockMessage) {
-			log.info("Process block...");
+			log.info("Add block to queue...");
 			BlockMessage block = (BlockMessage) msg;
 			this.pendingBlockHashes.remove(HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
 			this.queue.add(block);

@@ -47,9 +47,10 @@ public class GetHeadersMessage extends Message {
 
 	@Override
 	public String toString() {
-		return "GetHeadersMessage([" + String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
+		return "GetHeadersMessage(" + this.hashes.length + ": [" + String.join(", ", Arrays.stream(this.hashes).map((hash) -> {
 			return HashUtils.toHexStringAsLittleEndian(hash);
-		}).toArray(String[]::new)) + "], hashStop=" + HashUtils.toHexStringAsLittleEndian(this.hashStop) + ")";
+		}).limit(10).toArray(String[]::new)) + "], hashStop=" + HashUtils.toHexStringAsLittleEndian(this.hashStop)
+				+ ")";
 	}
 
 }

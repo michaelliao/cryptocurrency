@@ -118,7 +118,7 @@ public abstract class Message {
 			if (!Arrays.equals(expectedChecksum, actualChecksum)) {
 				throw new BitcoinException("Checksum failed.");
 			}
-			log.info("MSG: " + command + " payload (" + payloadLength + "): " + HashUtils.toHexString(payload, true));
+			log.info("MSG: " + command + " payload (" + payloadLength + ")");
 			// build msg:
 			Class<?> msgClass = msgMap.get(command);
 			if (msgClass == null) {
