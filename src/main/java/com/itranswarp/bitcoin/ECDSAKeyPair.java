@@ -11,20 +11,25 @@ import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
-public class KeyPair {
+/**
+ * The ECDSAKeyPair which contains a private key. Public key can be calculated
+ * by private key.
+ * 
+ * @author Michael Liao
+ */
+public class ECDSAKeyPair {
 
 	private final BigInteger privateKey;
 	private BigInteger[] publicKey = null;
 
-	// prevent instance directly:
-	private KeyPair(BigInteger privateKey) {
+	private ECDSAKeyPair(BigInteger privateKey) {
 		this.privateKey = privateKey;
 	}
 
 	/**
 	 * Create KeyPair with specified WIF string.
 	 */
-	public static KeyPair of(String wif) {
+	public static ECDSAKeyPair of(String wif) {
 		byte[] key = parseWIF(wif);
 		return of(key);
 	}
@@ -32,22 +37,22 @@ public class KeyPair {
 	/**
 	 * Create KeyPair with specified private key.
 	 */
-	public static KeyPair of(byte[] privateKey) {
+	public static ECDSAKeyPair of(byte[] privateKey) {
 		return of(new BigInteger(1, privateKey));
 	}
 
 	/**
 	 * Create KeyPair with specified private key.
 	 */
-	public static KeyPair of(BigInteger privateKey) {
+	public static ECDSAKeyPair of(BigInteger privateKey) {
 		checkPrivateKey(privateKey);
-		return new KeyPair(privateKey);
+		return new ECDSAKeyPair(privateKey);
 	}
 
 	/**
 	 * Create a new KeyPair with random private key.
 	 */
-	public static KeyPair createNewKeyPair() {
+	public static ECDSAKeyPair createNewKeyPair() {
 		return of(generatePrivateKey());
 	}
 
@@ -132,12 +137,11 @@ public class KeyPair {
 		int first;
 		SecureRandom sr = new SecureRandom();
 		do {
-			byte[] rnd = new byte[100 + sr.nextInt(100)];
+			byte[] rnd = new byte[200 + sr.nextInt(200)];
 			sr.nextBytes(rnd);
 			hash = HashUtils.sha256(rnd);
 			first = hash[0] & 0xff;
 		} while (first == 0x00 || first == 0xff);
-		System.out.println(HashUtils.toHexString(hash));
 		return hash;
 	}
 

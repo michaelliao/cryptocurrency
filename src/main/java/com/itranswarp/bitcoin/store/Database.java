@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.store.model.BlockEntity;
+import com.itranswarp.bitcoin.store.model.StxoEntity;
 import com.itranswarp.bitcoin.store.model.TxEntity;
 import com.itranswarp.bitcoin.store.model.UtxoEntity;
 
@@ -36,7 +37,7 @@ public class Database {
 
 	@SuppressWarnings("unchecked")
 	private static final Class<AbstractEntity>[] ENTITY_CLASSES = new Class[] { BlockEntity.class, TxEntity.class,
-			UtxoEntity.class };
+			UtxoEntity.class, StxoEntity.class };
 
 	public static synchronized Database init(String dbFile) {
 		if (jdbcConnectionUrl != null) {

@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.util.ScriptParser;
 import com.itranswarp.cryptocurrency.common.SatoshiSerializer;
-import com.itranswarp.cryptocurrency.common.ScriptParser;
 
 public class TxOut {
 

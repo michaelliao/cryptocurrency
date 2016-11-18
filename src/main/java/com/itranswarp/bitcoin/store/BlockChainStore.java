@@ -49,6 +49,11 @@ public class BlockChainStore {
 		final int height = database.queryForInt(BlockEntity.class, "count(*)", null);
 		final String blockHash = HashUtils.toHexStringAsLittleEndian(msg.getBlockHash());
 		log.info("Check block #" + height + ": " + blockHash + "...");
+		// check if added:
+		if (database.getById(BlockEntity.class, blockHash) != null) {
+			log.warn("Block was already added: " + blockHash);
+			return;
+		}
 		// check prev block:
 		final String prevHash = height == 0 ? BitcoinConstants.ZERO_HASH
 				: HashUtils.toHexStringAsLittleEndian(msg.header.prevHash);

@@ -28,8 +28,6 @@ public class Transaction {
 	// lock_time is irrelevant. Otherwise, the transaction may not be added to a
 	// block until after lock_time (see NLockTime).
 
-	private byte[] txHash = null;
-
 	public Transaction(BitcoinInput input) throws IOException {
 		this.version = input.readInt();
 		long tx_in_count = input.readVarInt(); // do not store count
@@ -53,6 +51,8 @@ public class Transaction {
 		return this.txHash;
 	}
 
+	private byte[] txHash = null;
+
 	public byte[] toByteArray() {
 		BitcoinOutput buffer = new BitcoinOutput();
 		buffer.writeInt(this.version).writeVarInt(this.tx_ins.length);
@@ -73,6 +73,13 @@ public class Transaction {
 
 	public long getTxOutCount() {
 		return this.tx_outs.length;
+	}
+
+	// http://bitcoin.stackexchange.com/questions/3374/how-to-redeem-a-basic-tx
+	public void validate() {
+		BitcoinOutput output = new BitcoinOutput();
+		output.writeInt(this.version);
+		// TODO:
 	}
 
 }

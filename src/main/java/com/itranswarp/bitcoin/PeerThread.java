@@ -84,6 +84,7 @@ public class PeerThread extends Thread {
 
 	private void connectTo(String node) throws IOException {
 		// try connect:
+		this.pendingBlockHashes.clear();
 		log.info("Try connect to node: " + node);
 		try (Socket sock = new Socket()) {
 			sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 5000);
@@ -104,8 +105,9 @@ public class PeerThread extends Thread {
 							output.write(resp.toByteArray());
 						} else {
 							if (this.pendingBlockHashes.isEmpty()) {
-								Message blks = new GetBlocksMessage(
-										HashUtils.toBytesAsLittleEndian(this.store.getLastBlockHash()),
+								String lastBlockHash = this.store.getLastBlockHash();
+								log.info("Try get from last block hash: " + lastBlockHash + "...");
+								Message blks = new GetBlocksMessage(HashUtils.toBytesAsLittleEndian(lastBlockHash),
 										BitcoinConstants.ZERO_HASH_BYTES);
 								log.info("=> " + blks);
 								output.write(blks.toByteArray());
@@ -138,7 +140,8 @@ public class PeerThread extends Thread {
 			log.info("Add block to queue...");
 			BlockMessage block = (BlockMessage) msg;
 			this.pendingBlockHashes.remove(HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
-			this.queue.add(block);
+			this.queue.offer(block);
+			log.info("Queue size: " + this.queue.size());
 		}
 		return null;
 	}

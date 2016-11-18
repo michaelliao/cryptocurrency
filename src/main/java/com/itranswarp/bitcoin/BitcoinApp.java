@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import com.itranswarp.bitcoin.io.BitcoinFileManager;
 import com.itranswarp.bitcoin.message.BlockMessage;
 import com.itranswarp.bitcoin.store.BlockChainStore;
-import com.itranswarp.bitcoin.store.ValidateException;
 
 public class BitcoinApp {
 
@@ -34,18 +33,20 @@ public class BitcoinApp {
 			}
 		});
 		for (;;) {
+			log.info("Check queue...");
 			BlockMessage msg = this.queue.poll();
 			if (msg != null) {
 				try {
 					this.store.addBlock(msg);
-				} catch (ValidateException e) {
-					log.warn("ValidateException", e);
+				} catch (Exception e) {
+					log.warn("Exception", e);
 				}
-			}
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				log.warn("InterruptedException", e);
+			} else {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					log.warn("InterruptedException", e);
+				}
 			}
 		}
 	}

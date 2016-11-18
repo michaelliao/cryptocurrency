@@ -1,13 +1,12 @@
-package com.itranswarp.cryptocurrency.common;
+package com.itranswarp.bitcoin.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.itranswarp.bitcoin.KeyPair;
+import com.itranswarp.bitcoin.ECDSAKeyPair;
 import com.itranswarp.bitcoin.io.BitcoinInput;
-import com.itranswarp.bitcoin.util.HashUtils;
 
 public class ScriptParser {
 
@@ -70,7 +69,7 @@ public class ScriptParser {
 		}
 		if (this.address.length == 65) {
 			// 65 bytes:
-			return KeyPair.publicKeyToAddress(this.address);
+			return ECDSAKeyPair.publicKeyToAddress(this.address);
 		}
 		return HashUtils.toHexString(this.address);
 	}

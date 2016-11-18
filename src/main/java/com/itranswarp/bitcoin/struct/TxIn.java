@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
+import com.itranswarp.bitcoin.store.ValidateException;
 import com.itranswarp.bitcoin.util.BytesUtils;
 
 public class TxIn {
@@ -33,4 +34,8 @@ public class TxIn {
 				.write(this.signature).writeUnsignedInt(this.sequence).toByteArray();
 	}
 
+	public void validate() {
+		
+		throw new ValidateException("Verify signature failed.");
+	}
 }

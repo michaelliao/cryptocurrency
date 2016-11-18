@@ -31,62 +31,10 @@ public class Main {
 	static final Log log = LogFactory.getLog(Main.class);
 
 	public static void main(String[] args) throws Exception {
-		try (BitcoinPeer peer = new BitcoinPeer()) {
-			for (;;) {
-				String node = peer.getPeer();
-				if (node == null) {
-					Thread.sleep(100);
-				} else {
-					// try connect:
-					log.info("Try connect to node: " + node);
-					try (Socket sock = new Socket()) {
-						sock.connect(new InetSocketAddress(node, BitcoinConstants.PORT), 3000);
-						try (InputStream input = sock.getInputStream()) {
-							try (OutputStream output = sock.getOutputStream()) {
-								VersionMessage vmsg = new VersionMessage(0, sock.getInetAddress());
-								log.info(":=> " + vmsg);
-								output.write(vmsg.toByteArray());
-								// receive msg:
-								byte[] firstBlock = BitcoinConstants.GENESIS_HASH_BYTES;
-								while (true) {
-									BitcoinInput in = new BitcoinInput(input);
-									Message msg = Message.Builder.parseMessage(in);
-									log.info("<=: " + msg);
-									Message resp = handleMessage(msg);
-									if (resp != null) {
-										log.info(":=> " + resp);
-										output.write(resp.toByteArray());
-									} else {
-										if (firstBlock != null) {
-											Message blks = new GetBlocksMessage(firstBlock, BitcoinConstants.ZERO_HASH_BYTES);
-											log.info(":=> " + blks);
-											output.write(blks.toByteArray());
-											firstBlock = null;
-										}
-									}
-								}
-							}
-						}
-					} catch (SocketTimeoutException | SocketException e) {
-						peer.removePeer(node);
-					} catch (EOFException e) {
-						peer.putAtLast(node);
-					}
-				}
-			}
+		for (byte i = 0; i < 100; i++) {
+			log.info(HashUtils.toHexString(HashUtils.doubleSha256(new byte[] { i, (byte) (i + 1), (byte) (i + 2),
+					(byte) (i + 3), (byte) (i + 4), (byte) (i + 5), (byte) (i + 6), (byte) (i + 7) })));
 		}
-		// String path = "/Users/liaoxuefeng/Bitcoin/blocks";
-		// BlockChainImporter importer = new BlockChainImporter();
-		// importer.importFromDir(path);
-		// importer.importFromFile(new
-		// File("/Users/liaoxuefeng/Bitcoin/blocks/blk00000.dat"));
-		// try (LittleEndianDataInputStream input = new
-		// LittleEndianDataInputStream(
-		// new BufferedInputStream(new FileInputStream(file)))) {
-		// Block block = new Block(input);
-		// System.out.println(toJson(block));
-		// // block.calculateNonce();
-		// }
 	}
 
 	private static Message handleMessage(Message msg) {
