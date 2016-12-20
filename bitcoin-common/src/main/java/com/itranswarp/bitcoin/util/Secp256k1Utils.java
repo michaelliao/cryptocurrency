@@ -10,6 +10,8 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
 
+import com.itranswarp.bitcoin.constant.BitcoinConstants;
+
 public class Secp256k1Utils {
 
 	public static final Provider BC = new BouncyCastleProvider();
@@ -50,13 +52,10 @@ public class Secp256k1Utils {
 					"bad length of uncompressed bytes: expect 65 but actual " + uncompressed.length);
 		}
 		byte[] hash = HashUtils.ripeMd160(HashUtils.sha256(uncompressed));
-		byte[] hashWithNetworkId = BytesUtils.concat(NETWORK_ID_ARRAY, hash);
+		byte[] hashWithNetworkId = BytesUtils.concat(BitcoinConstants.NETWORK_ID_ARRAY, hash);
 		byte[] checksum = HashUtils.doubleSha256(hashWithNetworkId);
 		byte[] address = BytesUtils.concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
 		return Base58Utils.encode(address);
 	}
-
-	static final byte NETWORK_ID = 0x00;
-	static final byte[] NETWORK_ID_ARRAY = { NETWORK_ID };
 
 }
