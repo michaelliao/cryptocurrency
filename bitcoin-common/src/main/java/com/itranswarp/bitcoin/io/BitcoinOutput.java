@@ -4,6 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Output "stream" for bitcoin protocol.
+ * 
+ * @author Michael Liao
+ */
 public final class BitcoinOutput {
 
 	ByteArrayOutputStream out;

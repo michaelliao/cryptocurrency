@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Input "stream" for bitcoin protocol.
+ * 
+ * @author Michael Liao
+ */
 public final class BitcoinInput implements AutoCloseable {
 
 	final InputStream in;
