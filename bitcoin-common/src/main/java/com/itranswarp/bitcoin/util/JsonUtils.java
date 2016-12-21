@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class JsonUtil {
+public class JsonUtils {
 
 	public static String toJson(Object o) {
 		ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
@@ -17,6 +17,10 @@ public class JsonUtil {
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void printJson(Object o) {
+		System.out.println(toJson(o));
 	}
 
 	public static <T> T fromJson(Class<T> clazz, String s) {
