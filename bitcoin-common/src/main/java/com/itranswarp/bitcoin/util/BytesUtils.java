@@ -1,5 +1,7 @@
 package com.itranswarp.bitcoin.util;
 
+import org.bouncycastle.util.Arrays;
+
 public class BytesUtils {
 
 	public static boolean isZeros(byte[] bs) {
@@ -29,6 +31,25 @@ public class BytesUtils {
 		offset += buf2.length;
 		System.arraycopy(buf3, 0, buffer, offset, buf3.length);
 		return buffer;
+	}
+
+	public static boolean equals(byte[] b1, byte[] b2) {
+		if (b1 == null || b2 == null) {
+			throw new IllegalArgumentException("one of the arguments is null");
+		}
+		if (b1.length != b2.length) {
+			return false;
+		}
+		for (int i = 0; i < b1.length; i++) {
+			if (b1[i] != b2[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static byte[] reverse(byte[] msgHash) {
+		return Arrays.reverse(msgHash);
 	}
 
 }

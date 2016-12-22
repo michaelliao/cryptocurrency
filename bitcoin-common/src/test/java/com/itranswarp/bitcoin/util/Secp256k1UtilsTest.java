@@ -70,4 +70,14 @@ public class Secp256k1UtilsTest {
 		// g.close();
 	}
 
+	@Test
+	public void testSignAndVerify() throws Exception {
+		BigInteger privateKey = new BigInteger("18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725", 16);
+		byte[] message = "Bitcoin: A Peer-to-Peer Electronic Cash System".getBytes();
+		byte[] signature = Secp256k1Utils.sign(message, privateKey);
+		System.out.println(signature.length + ": " + HashUtils.toHexString(signature));
+		// verify:
+		byte[] publicKey = Secp256k1Utils.toPublicKey(privateKey);
+		Secp256k1Utils.verify(message, signature, publicKey);
+	}
 }
