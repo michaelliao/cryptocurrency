@@ -16,8 +16,6 @@ public class TxOut {
 	@JsonSerialize(using = SatoshiSerializer.class)
 	public long value;
 
-	public long scriptLength;
-
 	/**
 	 * uchar[], Usually contains the public key as a Bitcoin script setting up
 	 * conditions to claim this output.
@@ -28,7 +26,7 @@ public class TxOut {
 
 	public TxOut(BitcoinInput input) throws IOException {
 		this.value = input.readLong();
-		this.scriptLength = input.readVarInt();
+		long scriptLength = input.readVarInt();
 		this.pk_script = input.readBytes((int) scriptLength);
 	}
 
@@ -46,6 +44,6 @@ public class TxOut {
 	}
 
 	public byte[] toByteArray() {
-		return new BitcoinOutput().writeLong(value).writeVarInt(this.scriptLength).write(pk_script).toByteArray();
+		return new BitcoinOutput().writeLong(value).writeVarInt(this.pk_script.length).write(pk_script).toByteArray();
 	}
 }
