@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.itranswarp.bitcoin.util.HashUtils;
 
 /**
- * Serialize byte[] to hex string.
+ * Serialize byte[] to hash string (byte[] reversed).
  * 
  * @author Michael Liao
  */
