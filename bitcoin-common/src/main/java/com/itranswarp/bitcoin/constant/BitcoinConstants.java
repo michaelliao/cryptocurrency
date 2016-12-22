@@ -1,5 +1,7 @@
 package com.itranswarp.bitcoin.constant;
 
+import java.math.BigInteger;
+
 import com.itranswarp.bitcoin.util.HashUtils;
 
 public final class BitcoinConstants {
@@ -13,8 +15,17 @@ public final class BitcoinConstants {
 	public static final long NETWORK_SERVICES = 1L;
 
 	public static final byte NETWORK_ID = 0x00;
-
 	public static final byte[] NETWORK_ID_ARRAY = { NETWORK_ID };
+
+	public static final byte PUBLIC_KEY_PREFIX = 0x04;
+	public static final byte[] PUBLIC_KEY_PREFIX_ARRAY = { PUBLIC_KEY_PREFIX };
+
+	public static final byte PRIVATE_KEY_PREFIX = (byte) 0x80;
+	public static final byte[] PRIVATE_KEY_PREFIX_ARRAY = { PRIVATE_KEY_PREFIX };
+
+	public static final BigInteger MIN_PRIVATE_KEY = new BigInteger("ffffffffffffffff", 16);
+	public static final BigInteger MAX_PRIVATE_KEY = new BigInteger(
+			"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140", 16);
 
 	public static final long NODE_ID = (long) (Math.random() * Long.MAX_VALUE);
 
@@ -28,4 +39,6 @@ public final class BitcoinConstants {
 
 	public static final byte[] ZERO_HASH_BYTES = HashUtils
 			.toBytesAsLittleEndian("0000000000000000000000000000000000000000000000000000000000000000");
+
+	public static final int SIGHASH_ALL = 0x01;
 }
