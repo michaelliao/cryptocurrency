@@ -1,5 +1,6 @@
 package com.itranswarp.bitcoin.keypair;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -10,6 +11,11 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
@@ -17,6 +23,7 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
 
+import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.util.Base58Utils;
 import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
@@ -101,14 +108,40 @@ public class ECDSAKeyPair {
 	}
 
 	/**
+	 * Convert to public key as uncompressed byte[].
+	 */
+	public byte[] toUncompressedPublicKey() {
+		BigInteger[] keys = getPublicKey();
+		byte[] xs = bigIntegerToBytes(keys[0], 32);
+		byte[] ys = bigIntegerToBytes(keys[1], 32);
+		return BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
+	}
+
+	/**
+	 * Convert to java.security.PublicKey.
+	 */
+	public static BigInteger[] toPublicKey(byte[] uncompressedPk) {
+		if (uncompressedPk == null || uncompressedPk.length != 65) {
+			throw new IllegalArgumentException("Invalid public key.");
+		}
+		if (uncompressedPk[0] != BitcoinConstants.PUBLIC_KEY_PREFIX) {
+			throw new IllegalArgumentException("Invalid public key.");
+		}
+		byte[] b1 = new byte[32];
+		byte[] b2 = new byte[32];
+		System.arraycopy(uncompressedPk, 1, b1, 0, 32);
+		System.arraycopy(uncompressedPk, 33, b2, 0, 32);
+		return new BigInteger[] { new BigInteger(1, b1), new BigInteger(1, b2) };
+	}
+
+	/**
 	 * Convert to java.security.PublicKey.
 	 */
 	public static PublicKey toPublicKey(BigInteger[] pubKey) {
 		try {
-			ECParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
 			KeyFactory kf = KeyFactory.getInstance("ECDSA", Secp256k1Utils.BC);
 			ECPoint point = Secp256k1Utils.getCurve().createPoint(pubKey[0], pubKey[1]);
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(point, spec);
+			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(point, Secp256k1Utils.SPEC);
 			return kf.generatePublic(pubKeySpec);
 		} catch (GeneralSecurityException e) {
 			throw new RuntimeException(e);
@@ -150,6 +183,23 @@ public class ECDSAKeyPair {
 		return verifySignature(getPublicKey(), message, signature);
 	}
 
+	public boolean verifySignature2(byte[] data, byte[] signature, byte[] pub) {
+		ECDSASigner signer = new ECDSASigner();
+		ECPublicKeyParameters params = new ECPublicKeyParameters(Secp256k1Utils.getCurve().decodePoint(pub),
+				Secp256k1Utils.ECPARAMS);
+		signer.init(false, params);
+		try {
+			ASN1InputStream decoder = new ASN1InputStream(signature);
+			DERSequence seq = (DERSequence) decoder.readObject();
+			ASN1Integer r = (ASN1Integer) seq.getObjectAt(0);
+			ASN1Integer s = (ASN1Integer) seq.getObjectAt(1);
+			decoder.close();
+			return signer.verifySignature(data, r.getValue(), s.getValue());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * Get public key as BigInteger[] with 2 elements.
 	 */
@@ -172,7 +222,7 @@ public class ECDSAKeyPair {
 		BigInteger[] keys = getPublicKey();
 		byte[] xs = bigIntegerToBytes(keys[0], 32);
 		byte[] ys = bigIntegerToBytes(keys[1], 32);
-		byte[] uncompressed = BytesUtils.concat(PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
+		byte[] uncompressed = BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
 		return Secp256k1Utils.publicKeyToAddress(uncompressed);
 	}
 
@@ -182,7 +232,7 @@ public class ECDSAKeyPair {
 	 */
 	public String getWalletImportFormat() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
-		byte[] extendedKey = BytesUtils.concat(PRIVATE_KEY_PREFIX_ARRAY, key);
+		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key);
 		byte[] hash = HashUtils.doubleSha256(extendedKey);
 		byte[] checksum = Arrays.copyOfRange(hash, 0, 4);
 		byte[] extendedKeyWithChecksum = BytesUtils.concat(extendedKey, checksum);
@@ -191,7 +241,7 @@ public class ECDSAKeyPair {
 
 	static byte[] parseWIF(String wif) {
 		byte[] data = Base58Utils.decodeChecked(wif);
-		if (data[0] != PRIVATE_KEY_PREFIX) {
+		if (data[0] != BitcoinConstants.PRIVATE_KEY_PREFIX) {
 			throw new IllegalArgumentException("Leading byte is not 0x80.");
 		}
 		// remove first 0x80:
@@ -238,23 +288,13 @@ public class ECDSAKeyPair {
 		if (bi == null) {
 			throw new IllegalArgumentException("Private key is null.");
 		}
-		if (bi.compareTo(MIN_PRIVATE_KEY) == (-1)) {
+		if (bi.compareTo(BitcoinConstants.MIN_PRIVATE_KEY) == (-1)) {
 			throw new IllegalArgumentException("Private key is too small.");
 		}
-		if (bi.compareTo(MAX_PRIVATE_KEY) == 1) {
+		if (bi.compareTo(BitcoinConstants.MAX_PRIVATE_KEY) == 1) {
 			throw new IllegalArgumentException("Private key is too large.");
 		}
 	}
-
-	static final byte PUBLIC_KEY_PREFIX = 0x04;
-	static final byte[] PUBLIC_KEY_PREFIX_ARRAY = { PUBLIC_KEY_PREFIX };
-
-	static final byte PRIVATE_KEY_PREFIX = (byte) 0x80;
-	static final byte[] PRIVATE_KEY_PREFIX_ARRAY = { PRIVATE_KEY_PREFIX };
-
-	private static final BigInteger MIN_PRIVATE_KEY = new BigInteger("ffffffffffffffff", 16);
-	private static final BigInteger MAX_PRIVATE_KEY = new BigInteger(
-			"fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140", 16);
 
 	@Override
 	public String toString() {
