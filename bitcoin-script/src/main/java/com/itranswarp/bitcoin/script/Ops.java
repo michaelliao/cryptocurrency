@@ -162,7 +162,6 @@ public class Ops {
 				log.info("payload: " + HashUtils.toHexString(message));
 				byte[] msgHash = HashUtils.doubleSha256(message);
 				log.info("payload hash: " + HashUtils.toHexString(msgHash));
-				BigInteger[] pk = ECDSAKeyPair.toPublicKey(pkData);
 				log.info("public key: " + HashUtils.toHexString(pkData));
 				log.info("sig: " + sig.length + ": " + HashUtils.toHexString(sig));
 				return Secp256k1Utils.verify(msgHash, sig, pkData);
