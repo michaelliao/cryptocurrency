@@ -1,6 +1,5 @@
 package com.itranswarp.bitcoin.script;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
-import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
 import com.itranswarp.bitcoin.struct.Transaction;
 import com.itranswarp.bitcoin.struct.TxIn;
 import com.itranswarp.bitcoin.struct.TxOut;
