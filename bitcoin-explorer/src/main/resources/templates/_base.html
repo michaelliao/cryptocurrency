@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{% block title %} TITLE {% endblock %}</title>
+	<link rel="stylesheet" href="/static/css/uikit.css">
+	<script src="/static/js/jquery.js"></script>
+	<script src="/static/js/uikit.js"></script>
+</head>
+<body>
+	<div class="uk-navbar uk-navbar-attached">
+		<div class="uk-container uk-container-center">
+			<a href="/" class="uk-navbar-brand"><i class="uk-icon-bitcoin"></i> Bitcoin Block Chain</a>
+			<ul class="uk-navbar-nav">
+				<li><a target="_blank" href="http://www.liaoxuefeng.com/">Get Started</a></li>
+				<li><a target="_blank" href="https://github.com/michaelliao/springcloud">Source</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="uk-container uk-container-center">
+		<div class="uk-grid">
+			<div class="uk-width-1-1">
+				{% block main %}
+					MAIN
+				{% endblock %}
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends("_base") %}
+
+{% block title %}
+	Index
+{% endblock %}
+
+{% block main %}
+	<h1>Hello, {{ name }}!</h1>
+	<p>Welcome to visit Spring Boot Pebble App!</p>
+	<table class="uk-table uk-table-striped">
+		<thead>
+			<tr>
+				<th>Block Height</th>
+				<th>Timestamp</th>
+				<th>Relayed By</th>
+				<th>Block Hash</th>
+				<th>Block Size</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>446060</td>
+				<td>2017-01-01 04:30:32</td>
+				<td>HaoBTC</td>
+				<td><a href="/block/aa">000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</a></td>
+				<td>998.2 kb</td>
+			</tr>
+			<tr>
+				<td>446060</td>
+				<td>2017-01-01 04:30:32</td>
+				<td>HaoBTC</td>
+				<td><a href="/block/aa">000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</a></td>
+				<td>998.2 kb</td>
+			</tr>
+			<tr>
+				<td>446060</td>
+				<td>2017-01-01 04:30:32</td>
+				<td>HaoBTC</td>
+				<td><a href="/block/aa">000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</a></td>
+				<td>998.2 kb</td>
+			</tr>
+		</tbody>
+	</table>
+{% endblock %}

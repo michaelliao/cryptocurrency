@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: bitcoin-explorer
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/petstore?useSSL=false
+    username: root
+    password: password
+  jpa:
+    show-sql: true
+    database: mysql
+    properties:
+      javax:
+        persistence:
+          # 自动生成DDL脚本:
+          schema-generation:
+            create-source: metadata
+            scripts:
+              action: create
+              create-target: target/init.sql
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
+pebble:
+  cache: false
+
+server:
+  port: 8000

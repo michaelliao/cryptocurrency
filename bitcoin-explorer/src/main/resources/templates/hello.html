@@ -1,0 +1,11 @@
+{% extends("_base") %}
+
+{% block title %}
+	Hello {{ user.name }}
+{% endblock %}
+
+{% block main %}
+	<h1>Hello, {{ user.name }}!</h1>
+	<p>ID: {{ user.id }}</p>
+	<p>Email: {{ user.email }}</p>
+{% endblock %}
