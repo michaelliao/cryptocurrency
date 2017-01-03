@@ -18,8 +18,7 @@ public class TransactionTest {
 		// real data from:
 		// https://webbtc.com/tx/069d1cdb3fe70af7289ce0d7f08577fe6a72f75ddba30f84fa54392a6f67ec72
 		String txhash = "069d1cdb3fe70af7289ce0d7f08577fe6a72f75ddba30f84fa54392a6f67ec72";
-		byte[] txdata = ClasspathUtils.loadAsBytes("/tx-" + txhash + ".dat");
-		System.out.println(HashUtils.toHexString(txdata));
+		byte[] txdata = ClasspathUtils.loadAsBytes("/tx-" + txhash + ".dat"); 
 		try (BitcoinInput input = new BitcoinInput(txdata)) {
 			Transaction tx = new Transaction(input);
 			JsonUtils.printJson(tx);
