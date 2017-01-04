@@ -10,7 +10,7 @@ public final class BitcoinConstants {
 
 	public static final int PORT = 8333;
 
-	public static final int PROTOCOL_VERSION = 70002;
+	public static final int PROTOCOL_VERSION = 70014;
 
 	public static final long NETWORK_SERVICES = 1L;
 
