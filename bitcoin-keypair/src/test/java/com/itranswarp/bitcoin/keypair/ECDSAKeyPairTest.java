@@ -6,9 +6,7 @@ import java.math.BigInteger;
 
 import org.junit.Test;
 
-import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
-import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 
 public class ECDSAKeyPairTest {
@@ -73,18 +71,9 @@ public class ECDSAKeyPairTest {
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
 		byte[] signature = kp.createSignature(message);
 		System.out.println(signature.length + ": " + HashUtils.toHexString(signature));
-		byte[] uncompressed = kp.toUncompressedPublicKey();
 		assertTrue(kp.verifySignature(message, signature));
 		// change message:
 		message[0] = 'A';
 		assertFalse(kp.verifySignature(message, signature));
-	}
-
-	@Test
-	public void testVerifySignature() {
-		// real transaction data:
-		// https://webbtc.com/tx/069d1cdb3fe70af7289ce0d7f08577fe6a72f75ddba30f84fa54392a6f67ec72.json
-		String pubKeyHash = "46eea323b79a8ec94e01afa1163e3e9dc95cd00e";
-		String scriptSig = "30450221009b06f0751edd69c20c309a4ffce9830a79aa58c3d1222856556b2c27b253728502204bde9897cd75d141abb47e0ad1dec7b42cb1d6e6865bd010e06924ebb8f5464501031c5222ffc273745c7c44f7d4969f2629452e8a583b05b8ce5d481c1a5627e469";
 	}
 }
