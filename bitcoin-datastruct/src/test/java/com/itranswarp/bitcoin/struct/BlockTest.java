@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.util.ClasspathUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
@@ -44,4 +45,12 @@ public class BlockTest {
 		}
 	}
 
+	@Test
+	public void testGenesisBlock() throws Exception {
+		try (BitcoinInput input = new BitcoinInput(BitcoinConstants.GENESIS_BLOCK_DATA)) {
+			Block block = new Block(input);
+			assertEquals(BitcoinConstants.GENESIS_HASH, HashUtils.toHexStringAsLittleEndian(block.getBlockHash()));
+			assertEquals(1, block.txns.length);
+		}
+	}
 }
