@@ -46,6 +46,7 @@ public class PeerDiscover {
 		if (ips.length == 0) {
 			throw new BitcoinException("Cannot lookup pears from all DNS seeds.");
 		}
+		log.info(ips.length + " peers found.");
 		return ips;
 	}
 

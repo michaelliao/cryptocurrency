@@ -8,11 +8,9 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,18 +25,7 @@ public class PeerManager {
 	final File cached;
 
 	// peers
-	final Set<Peer> peers = new TreeSet<>(new Comparator<Peer>() {
-		@Override
-		public int compare(Peer p1, Peer p2) {
-			if (p1.score > p2.score) {
-				return -1;
-			}
-			if (p1.score < p2.score) {
-				return 1;
-			}
-			return 0;
-		}
-	});
+	final List<Peer> peers = new ArrayList<>();
 
 	public PeerManager() {
 		this(null);
@@ -47,14 +34,14 @@ public class PeerManager {
 	public PeerManager(File cachedFile) {
 		this.cached = cachedFile;
 		Peer[] cachedPeers = loadPeers();
-		peers.addAll(Arrays.asList(cachedPeers));
+		addPeers(cachedPeers);
 		if (peers.size() < 5) {
 			// lookup from DNS:
 			Thread t = new Thread() {
 				public void run() {
 					try {
 						String[] ips = PeerDiscover.lookup();
-						addPeers(Arrays.asList(ips));
+						addPeers(ips);
 					} catch (Exception e) {
 						log.warn("Could not discover peers.", e);
 					}
@@ -65,7 +52,7 @@ public class PeerManager {
 		}
 	}
 
-	public synchronized int peers() {
+	public synchronized int peerCount() {
 		return peers.size();
 	}
 
@@ -75,6 +62,14 @@ public class PeerManager {
 	 * @return Ip or null if no peer available.
 	 */
 	public synchronized String getPeer() {
+		log.info("Try get an unused peer from " + this.peers.size() + " peers...");
+		this.peers.sort(new Comparator<Peer>() {
+			@Override
+			public int compare(Peer p1, Peer p2) {
+				// TODO Auto-generated method stub
+				return p1.score > p2.score ? -1 : 1;
+			}
+		});
 		for (Peer p : this.peers) {
 			if (!p.using) {
 				p.using = true;
@@ -107,12 +102,26 @@ public class PeerManager {
 				this.peers.remove(target);
 			}
 		}
+		storePeers();
 	}
 
-	public synchronized void addPeers(List<String> ips) {
-		for (String ip : ips) {
-			this.peers.add(new Peer(ip));
+	public synchronized void addPeers(String[] ips) {
+		Peer[] ps = new Peer[ips.length];
+		for (int i = 0; i < ps.length; i++) {
+			ps[i] = new Peer(ips[i]);
 		}
+		addPeers(ps);
+	}
+
+	public synchronized void addPeers(Peer[] ps) {
+		log.info("Add discovered " + ps.length + " peers...");
+		for (Peer p : ps) {
+			if (!this.peers.contains(p)) {
+				this.peers.add(p);
+			}
+		}
+		log.info("Total peers: " + this.peers.size());
+		storePeers();
 	}
 
 	public synchronized void close() {
@@ -124,7 +133,7 @@ public class PeerManager {
 			try (InputStream input = new BufferedInputStream(new FileInputStream(this.cached))) {
 				return JsonUtils.fromJson(Peer[].class, input);
 			} catch (Exception e) {
-				log.warn("Load cached peers from cached file failed: " + this.cached.getAbsolutePath(), e);
+				log.warn("Load cached peers from cached file failed: " + this.cached.getAbsolutePath());
 			}
 		}
 		return new Peer[0];
@@ -147,10 +156,10 @@ public class PeerManager {
 		for (int i = 0; i < 60; i++) {
 			Thread.sleep(1000);
 			System.out.print('.');
-			if (manager.peers() > 0) {
+			if (manager.peerCount() > 0) {
 				break;
 			}
 		}
-		System.out.println("\n" + manager.peers() + " peers discovered.");
+		System.out.println("\n" + manager.peerCount() + " peers discovered.");
 	}
 }

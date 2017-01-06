@@ -1,12 +1,10 @@
 package com.itranswarp.bitcoin.p2p;
 
-import java.util.Objects;
-
-public class Peer implements Comparable<Peer> {
+public class Peer {
 
 	public String ip;
 	public int score;
-	transient boolean using;
+	volatile boolean using;
 
 	public Peer() {
 	}
@@ -15,33 +13,22 @@ public class Peer implements Comparable<Peer> {
 		this.ip = ip;
 	}
 
-	public void inc() {
-		this.score++;
-	}
-
-	public void decr() {
-		this.score--;
-	}
-
-	@Override
-	public int compareTo(Peer o) {
-		if (this.score > o.score) {
-			return -1;
-		}
-		return 1;
+	public Peer(String ip, int score) {
+		this.ip = ip;
+		this.score = score;
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof Peer) {
 			Peer p = (Peer) o;
-			return Objects.equals(this.ip, p.ip);
+			return this.ip.equals(p.ip);
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.ip);
+		return this.ip.hashCode();
 	}
 }
