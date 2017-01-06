@@ -17,6 +17,9 @@ public class BlockEntity {
 	@Column(nullable = false, updatable = false, unique = true, length = EntityConstants.HASH_LENGTH)
 	public String merkleHash;
 
+	/**
+	 * Epoch time in seconds.
+	 */
 	@Column(nullable = false, updatable = false)
 	public long timestamp;
 

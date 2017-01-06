@@ -3,7 +3,7 @@ spring:
     name: bitcoin-explorer
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/petstore?useSSL=false
+    url: jdbc:mysql://localhost:3306/bitcoin?useSSL=false
     username: root
     password: password
   jpa:
