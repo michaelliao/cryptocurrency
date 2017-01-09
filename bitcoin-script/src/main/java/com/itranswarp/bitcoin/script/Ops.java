@@ -150,7 +150,7 @@ public class Ops {
 				byte[] message = null;
 				switch (sigType) {
 				case BitcoinConstants.SIGHASH_ALL:
-					message = sigHashAll(context.getTransaction(), context.getTxInIndex(), context);
+					message = sigHashAll(context);
 					break;
 				default:
 					log.warn("Unsupported sighash: " + sigType);
@@ -175,7 +175,9 @@ public class Ops {
 		OPS = map;
 	}
 
-	static byte[] sigHashAll(Transaction tx, int index, ScriptContext ctx) {
+	static byte[] sigHashAll(ScriptContext ctx) {
+		Transaction tx = ctx.getTransaction();
+		int index = ctx.getTxInIndex();
 		BitcoinOutput buffer = new BitcoinOutput();
 		buffer.writeInt(tx.version);
 		buffer.writeVarInt(tx.tx_ins.length);
