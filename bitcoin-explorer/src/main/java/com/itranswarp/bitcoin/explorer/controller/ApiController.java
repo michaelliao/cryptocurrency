@@ -28,4 +28,15 @@ public class ApiController {
 		return null;
 	}
 
+	/**
+	 * API sample:
+	 * 
+	 * https://blockchain.info/address/1EzwoHtiXB4iFwedPr49iywjZn2nnekhoj?format=json
+	 * 
+	 * @return
+	 */
+	@GetMapping("/address/{address}")
+	public Object address(@PathVariable("address") String address) {
+		return null;
+	}
 }

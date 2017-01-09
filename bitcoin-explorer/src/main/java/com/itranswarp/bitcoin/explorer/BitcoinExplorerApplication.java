@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -26,6 +27,7 @@ import com.mitchellbosecke.pebble.spring4.PebbleViewResolver;
  * 
  * @author Michael Liao
  */
+@EnableScheduling
 @EnableJpaRepositories
 @SpringBootApplication
 public class BitcoinExplorerApplication {

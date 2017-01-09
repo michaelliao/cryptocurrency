@@ -5,6 +5,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.explorer.domain.BlockEntity;
 import com.itranswarp.bitcoin.explorer.domain.TxEntity;
 import com.itranswarp.bitcoin.explorer.repository.BlockRepository;
@@ -24,12 +25,20 @@ public class BlockProcessor {
 
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	public BlockEntity processBlock(Block block) {
+		final String prevHash = HashUtils.toHexStringAsLittleEndian(block.header.prevHash);
+		long height = 0;
+		if (!BitcoinConstants.ZERO_HASH.equals(prevHash)) {
+			BlockEntity prevEntity = this.blockRepository.findOne(prevHash);
+			height = prevEntity.height + 1;
+		}
+		final String blockHash = HashUtils.toHexStringAsLittleEndian(block.getBlockHash());
 		BlockEntity blockEntity = new BlockEntity();
-		blockEntity.blockHash = HashUtils.toHexStringAsLittleEndian(block.getBlockHash());
+		blockEntity.blockHash = blockHash; // pk
 		blockEntity.bits = block.header.bits;
 		blockEntity.merkleHash = HashUtils.toHexStringAsLittleEndian(block.header.merkleHash);
 		blockEntity.nonce = block.header.nonce;
-		blockEntity.prevHash = HashUtils.toHexStringAsLittleEndian(block.header.prevHash);
+		blockEntity.prevHash = prevHash;
+		blockEntity.height = height;
 		blockEntity.timestamp = block.header.timestamp;
 		blockEntity.version = block.header.version;
 		blockRepository.save(blockEntity);
@@ -37,9 +46,10 @@ public class BlockProcessor {
 		int txIndex = 0;
 		for (Transaction tx : block.txns) {
 			String txHash = HashUtils.toHexStringAsLittleEndian(tx.getTxHash());
+			
 			TxEntity txEntity = new TxEntity();
-			txEntity.blockHash = blockEntity.blockHash;
-			txEntity.txHash = txHash;
+			txEntity.txHash = txHash; // pk
+			txEntity.blockHash = blockHash;
 			txEntity.txIndex = txIndex;
 			txEntity.inputCount = tx.getTxInCount();
 			txEntity.outputCount = tx.getTxOutCount();
