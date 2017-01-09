@@ -33,6 +33,7 @@ public class PeerConnection extends Thread implements MessageSender {
 	final BlockingQueue<Message> sendingQueue;
 
 	volatile boolean running = false;
+	volatile long timeout = 0;
 
 	public PeerConnection(String nodeIp, PeerListener listener) {
 		this.nodeIp = nodeIp;
@@ -51,10 +52,15 @@ public class PeerConnection extends Thread implements MessageSender {
 			try (InputStream input = sock.getInputStream()) {
 				try (OutputStream output = sock.getOutputStream()) {
 					listener.connected(this.nodeIp);
+					setTimeout(60_000);
 					// add version message to send automatically:
 					this.sendMessage(new VersionMessage(0, sock.getInetAddress()));
 					// loop:
 					while (this.running) {
+						if (isTimeout()) {
+							log.info("Timeout!");
+							break;
+						}
 						// try get message to send:
 						Message msg = sendingQueue.poll(1, TimeUnit.SECONDS);
 						if (this.running && msg != null) {
@@ -108,4 +114,12 @@ public class PeerConnection extends Thread implements MessageSender {
 		this.sendingQueue.add(message);
 	}
 
+	@Override
+	public void setTimeout(long timeoutInMillis) {
+		this.timeout = System.currentTimeMillis() + timeoutInMillis;
+	}
+
+	boolean isTimeout() {
+		return System.currentTimeMillis() > this.timeout;
+	}
 }
