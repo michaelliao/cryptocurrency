@@ -117,13 +117,14 @@ class ScriptContextImpl implements ScriptContext {
 	}
 
 	@Override
-	public Map<String, TxOut> getPreviousTxOutAsMap() {
-		return this.prevUtxos;
+	public int getTxInIndex() {
+		return this.txInIndex;
 	}
 
 	@Override
-	public int getTxInIndex() {
-		return this.txInIndex;
+	public TxOut getUTXO(String txHash, long index) {
+		String key = txHash + "#" + index;
+		return this.prevUtxos.get(key);
 	}
 }
 

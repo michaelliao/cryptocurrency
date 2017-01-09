@@ -1,7 +1,5 @@
 package com.itranswarp.bitcoin.script;
 
-import java.util.Map;
-
 import com.itranswarp.bitcoin.struct.Transaction;
 import com.itranswarp.bitcoin.struct.TxOut;
 
@@ -14,9 +12,9 @@ public interface ScriptContext {
 	Transaction getTransaction();
 
 	/**
-	 * Get previous TxOut as map. The key is composed by: "tx-hash#index".
+	 * Get previous UTXO.
 	 */
-	Map<String, TxOut> getPreviousTxOutAsMap();
+	TxOut getUTXO(String txHash, long index);
 
 	int getTxInIndex();
 }

@@ -150,8 +150,7 @@ public class Ops {
 				byte[] message = null;
 				switch (sigType) {
 				case BitcoinConstants.SIGHASH_ALL:
-					message = sigHashAll(context.getTransaction(), context.getTxInIndex(),
-							context.getPreviousTxOutAsMap());
+					message = sigHashAll(context.getTransaction(), context.getTxInIndex(), context);
 					break;
 				default:
 					log.warn("Unsupported sighash: " + sigType);
@@ -176,7 +175,7 @@ public class Ops {
 		OPS = map;
 	}
 
-	static byte[] sigHashAll(Transaction tx, int index, Map<String, TxOut> utxos) {
+	static byte[] sigHashAll(Transaction tx, int index, ScriptContext ctx) {
 		BitcoinOutput buffer = new BitcoinOutput();
 		buffer.writeInt(tx.version);
 		buffer.writeVarInt(tx.tx_ins.length);
@@ -185,9 +184,9 @@ public class Ops {
 			buffer.write(in.previousOutput.toByteArray());
 			if (i == index) {
 				// replace sigScript with output script:
-				String key = HashUtils.toHexStringAsLittleEndian(in.previousOutput.hash) + "#"
-						+ in.previousOutput.index;
-				TxOut out = utxos.get(key);
+				String txHash = HashUtils.toHexStringAsLittleEndian(in.previousOutput.hash);
+				long utxoIndex = in.previousOutput.index;
+				TxOut out = ctx.getUTXO(txHash, utxoIndex);
 				buffer.writeVarInt(out.pk_script.length);
 				buffer.write(out.pk_script);
 			} else {
