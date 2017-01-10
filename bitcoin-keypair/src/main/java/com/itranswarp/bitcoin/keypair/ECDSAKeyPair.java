@@ -1,25 +1,9 @@
 package com.itranswarp.bitcoin.keypair;
 
-import java.io.IOException;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.spec.InvalidKeySpecException;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.crypto.params.ECPublicKeyParameters;
-import org.bouncycastle.crypto.signers.ECDSASigner;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
 
@@ -87,27 +71,6 @@ public class ECDSAKeyPair {
 	}
 
 	/**
-	 * Convert to java.security.PrivateKey.
-	 */
-	public PrivateKey toPrivateKey() {
-		try {
-			ECParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
-			KeyFactory kf = KeyFactory.getInstance("ECDSA", Secp256k1Utils.BC);
-			ECPrivateKeySpec priKeySpec = new ECPrivateKeySpec(getPrivateKey(), spec);
-			return kf.generatePrivate(priKeySpec);
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Convert to java.security.PublicKey.
-	 */
-	public PublicKey toPublicKey() {
-		return toPublicKey(getPublicKey());
-	}
-
-	/**
 	 * Convert to public key as uncompressed byte[].
 	 */
 	public byte[] toUncompressedPublicKey() {
@@ -132,72 +95,6 @@ public class ECDSAKeyPair {
 		System.arraycopy(uncompressedPk, 1, b1, 0, 32);
 		System.arraycopy(uncompressedPk, 33, b2, 0, 32);
 		return new BigInteger[] { new BigInteger(1, b1), new BigInteger(1, b2) };
-	}
-
-	/**
-	 * Convert to java.security.PublicKey.
-	 */
-	public static PublicKey toPublicKey(BigInteger[] pubKey) {
-		try {
-			KeyFactory kf = KeyFactory.getInstance("ECDSA", Secp256k1Utils.BC);
-			ECPoint point = Secp256k1Utils.getCurve().createPoint(pubKey[0], pubKey[1]);
-			ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(point, Secp256k1Utils.SPEC);
-			return kf.generatePublic(pubKeySpec);
-		} catch (GeneralSecurityException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Create signature using current private key.
-	 */
-	public byte[] createSignature(byte[] message) {
-		try {
-			Signature sign = Signature.getInstance("SHA256withECDSA", Secp256k1Utils.BC);
-			sign.initSign(toPrivateKey(), new SecureRandom());
-			sign.update(message);
-			return sign.sign();
-		} catch (GeneralSecurityException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Verify signature.
-	 */
-	public static boolean verifySignature(BigInteger[] pubKey, byte[] message, byte[] signature) {
-		try {
-			Signature sign = Signature.getInstance("SHA256withECDSA", Secp256k1Utils.BC);
-			sign.initVerify(toPublicKey(pubKey));
-			sign.update(message);
-			return sign.verify(signature);
-		} catch (GeneralSecurityException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Verify signature.
-	 */
-	public boolean verifySignature(byte[] message, byte[] signature) {
-		return verifySignature(getPublicKey(), message, signature);
-	}
-
-	public boolean verifySignature2(byte[] data, byte[] signature, byte[] pub) {
-		ECDSASigner signer = new ECDSASigner();
-		ECPublicKeyParameters params = new ECPublicKeyParameters(Secp256k1Utils.getCurve().decodePoint(pub),
-				Secp256k1Utils.ECPARAMS);
-		signer.init(false, params);
-		try {
-			ASN1InputStream decoder = new ASN1InputStream(signature);
-			DERSequence seq = (DERSequence) decoder.readObject();
-			ASN1Integer r = (ASN1Integer) seq.getObjectAt(0);
-			ASN1Integer s = (ASN1Integer) seq.getObjectAt(1);
-			decoder.close();
-			return signer.verifySignature(data, r.getValue(), s.getValue());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	/**
@@ -239,7 +136,10 @@ public class ECDSAKeyPair {
 		return Base58Utils.encode(extendedKeyWithChecksum);
 	}
 
-	static byte[] parseWIF(String wif) {
+	/**
+	 * Parse WIF string as private key.
+	 */
+	public static byte[] parseWIF(String wif) {
 		byte[] data = Base58Utils.decodeChecked(wif);
 		if (data[0] != BitcoinConstants.PRIVATE_KEY_PREFIX) {
 			throw new IllegalArgumentException("Leading byte is not 0x80.");
@@ -248,8 +148,12 @@ public class ECDSAKeyPair {
 		return Arrays.copyOfRange(data, 1, data.length);
 	}
 
-	// generate random private key between 0x00ffff... ~ 0xff0000...
-	static byte[] generatePrivateKey() {
+	/**
+	 * generate random private key between 0x00ffff... ~ 0xff0000...
+	 * 
+	 * @return Private key as byte[256].
+	 */
+	public static byte[] generatePrivateKey() {
 		byte[] hash = null;
 		int first;
 		SecureRandom sr;

@@ -7,7 +7,6 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
-import com.itranswarp.bitcoin.util.HashUtils;
 
 public class ECDSAKeyPairTest {
 
@@ -62,18 +61,5 @@ public class ECDSAKeyPairTest {
 		BigInteger privateKey = new BigInteger("18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
 		assertEquals("16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM", kp.getAddress());
-	}
-
-	@Test
-	public void testCreateSignatureAndVerify() {
-		BigInteger privateKey = new BigInteger("18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725", 16);
-		byte[] message = "Bitcoin: A Peer-to-Peer Electronic Cash System".getBytes();
-		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		byte[] signature = kp.createSignature(message);
-		System.out.println(signature.length + ": " + HashUtils.toHexString(signature));
-		assertTrue(kp.verifySignature(message, signature));
-		// change message:
-		message[0] = 'A';
-		assertFalse(kp.verifySignature(message, signature));
 	}
 }
