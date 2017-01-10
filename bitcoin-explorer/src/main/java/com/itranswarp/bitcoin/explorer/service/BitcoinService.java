@@ -123,7 +123,7 @@ public class BitcoinService implements MessageListener {
 	}
 
 	/**
-	 * Get block by hash.
+	 * Get block entity by hash.
 	 * 
 	 * @param hash
 	 *            block hash.
@@ -133,6 +133,9 @@ public class BitcoinService implements MessageListener {
 		return checkNonNull(blockRepository.findOne(hash), "Block not found.");
 	}
 
+	/**
+	 * process next block from queue.
+	 */
 	@Scheduled(initialDelay = 10_000, fixedRate = 1_000)
 	public void processPendingBlock() {
 		lock.lock();
@@ -192,8 +195,23 @@ public class BitcoinService implements MessageListener {
 			String prevHash = HashUtils.toHexStringAsLittleEndian(block.header.prevHash);
 			if (!this.lastBlockHash.equals(prevHash)) {
 				log.warn("Validate block failed: expected prevHash = " + this.lastBlockHash + ", actual = " + prevHash);
+				// cannot continue process:
+				this.deque.clear();
+				System.exit(1);
 				return;
 			}
+			// check merkle root:
+			String actualMerkle = HashUtils.toHexStringAsLittleEndian(block.calculateMerkleHash());
+			String expectedMerkle = HashUtils.toHexStringAsLittleEndian(block.header.merkleHash);
+			if (!actualMerkle.equals(expectedMerkle)) {
+				log.error("Invalid merkle hash: expected = " + expectedMerkle + ", actual = " + actualMerkle);
+				// cannot continue process:
+				this.deque.clear();
+				System.exit(1);
+				return;
+			}
+			// check transactions:
+			// TODO:
 			blockProcessor.processBlock(block);
 			this.lastBlockHash = hash;
 			log.info("Added block: " + hash);

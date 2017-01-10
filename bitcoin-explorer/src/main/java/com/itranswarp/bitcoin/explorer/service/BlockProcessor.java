@@ -46,7 +46,6 @@ public class BlockProcessor {
 		int txIndex = 0;
 		for (Transaction tx : block.txns) {
 			String txHash = HashUtils.toHexStringAsLittleEndian(tx.getTxHash());
-			
 			TxEntity txEntity = new TxEntity();
 			txEntity.txHash = txHash; // pk
 			txEntity.blockHash = blockHash;
