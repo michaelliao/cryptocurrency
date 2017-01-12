@@ -4,6 +4,6 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.itranswarp.bitcoin.explorer.domain.TxEntity;
 
-public interface TxEntityRepository extends CrudRepository<TxEntity, String> {
+public interface TxRepository extends CrudRepository<TxEntity, String> {
 
 }

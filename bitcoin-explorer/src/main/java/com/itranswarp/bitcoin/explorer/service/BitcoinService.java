@@ -22,6 +22,8 @@ import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.explorer.domain.BlockEntity;
 import com.itranswarp.bitcoin.explorer.repository.BlockRepository;
+import com.itranswarp.bitcoin.explorer.repository.OutRepository;
+import com.itranswarp.bitcoin.explorer.repository.TxRepository;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.p2p.MessageListener;
 import com.itranswarp.bitcoin.p2p.MessageSender;
@@ -75,6 +77,12 @@ public class BitcoinService implements MessageListener {
 
 	@Autowired
 	BlockRepository blockRepository;
+
+	@Autowired
+	TxRepository txRepository;
+
+	@Autowired
+	OutRepository outRepository;
 
 	@PostConstruct
 	public void init() throws IOException {
@@ -211,13 +219,23 @@ public class BitcoinService implements MessageListener {
 				return;
 			}
 			// check transactions:
-			// TODO:
+			if (!checkTransactions(block)) {
+				log.error("Check transactions failed.");
+				this.deque.clear();
+				System.exit(1);
+				return;
+			}
 			blockProcessor.processBlock(block);
 			this.lastBlockHash = hash;
 			log.info("Added block: " + hash);
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	boolean checkTransactions(Block block) {
+		//
+		return true;
 	}
 
 	<T> T checkNonNull(T object, String message) {

@@ -5,9 +5,10 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
-@Table(indexes = @Index(columnList = "blockHash"))
+@Table(indexes = @Index(name = "idx_block_hash", columnList = "blockHash"))
 public class TxEntity {
 
 	@Id
@@ -27,8 +28,27 @@ public class TxEntity {
 	public long outputCount;
 
 	@Column(nullable = false, updatable = false)
+	public long totalInput;
+
+	@Column(nullable = false, updatable = false)
+	public long totalOutput;
+
+	@Column(nullable = false, updatable = false)
 	public long lockTime;
 
 	@Column(nullable = false, updatable = false)
 	public long version;
+
+	@Transient
+	public boolean isCoinBase() {
+		return this.inputCount == 0;
+	}
+
+	@Transient
+	public long fees() {
+		if (isCoinBase()) {
+			return 0;
+		}
+		return totalOutput - totalInput;
+	}
 }
