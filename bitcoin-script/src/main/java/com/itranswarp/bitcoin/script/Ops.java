@@ -16,6 +16,11 @@ import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
+/**
+ * Script ops: https://en.bitcoin.it/wiki/Script
+ * 
+ * @author liaoxuefeng
+ */
 public class Ops {
 
 	final Log Log = LogFactory.getLog(getClass());
