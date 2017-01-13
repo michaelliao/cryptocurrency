@@ -123,13 +123,24 @@ public class Secp256k1Utils {
 		return curve;
 	}
 
-	public static String publicKeyToAddress(byte[] uncompressed) {
+	public static String uncompressedPublicKeyToAddress(byte[] uncompressed) {
 		if (uncompressed.length != 65) {
 			throw new IllegalArgumentException(
 					"bad length of uncompressed bytes: expect 65 but actual " + uncompressed.length);
 		}
-		byte[] hash = HashUtils.ripeMd160(HashUtils.sha256(uncompressed));
-		byte[] hashWithNetworkId = BytesUtils.concat(BitcoinConstants.NETWORK_ID_ARRAY, hash);
+		byte[] hash160 = HashUtils.ripeMd160(HashUtils.sha256(uncompressed));
+		return _hash160PublicKeyToAddress(hash160);
+	}
+
+	public static String hash160PublicKeyToAddress(byte[] hash160) {
+		if (hash160.length != 20) {
+			throw new IllegalArgumentException("bad length of hash160 bytes: expect 20 but actual " + hash160.length);
+		}
+		return _hash160PublicKeyToAddress(hash160);
+	}
+
+	private static String _hash160PublicKeyToAddress(byte[] hash160) {
+		byte[] hashWithNetworkId = BytesUtils.concat(BitcoinConstants.NETWORK_ID_ARRAY, hash160);
 		byte[] checksum = HashUtils.doubleSha256(hashWithNetworkId);
 		byte[] address = BytesUtils.concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
 		return Base58Utils.encode(address);
