@@ -120,7 +120,7 @@ public class ECDSAKeyPair {
 		byte[] xs = bigIntegerToBytes(keys[0], 32);
 		byte[] ys = bigIntegerToBytes(keys[1], 32);
 		byte[] uncompressed = BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
-		return Secp256k1Utils.publicKeyToAddress(uncompressed);
+		return Secp256k1Utils.uncompressedPublicKeyToAddress(uncompressed);
 	}
 
 	/**
