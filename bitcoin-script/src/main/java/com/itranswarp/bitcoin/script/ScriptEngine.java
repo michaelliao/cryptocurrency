@@ -17,15 +17,26 @@ import com.itranswarp.bitcoin.struct.Transaction;
 import com.itranswarp.bitcoin.struct.TxOut;
 import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
+import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
 public class ScriptEngine {
 
 	static final Log log = LogFactory.getLog(ScriptEngine.class);
 
 	private final List<Op> ops;
+	private String address = "";
 
 	ScriptEngine(List<Op> ops) {
 		this.ops = ops;
+	}
+
+	/**
+	 * Try extract address from script.
+	 * 
+	 * @return Public key address or empty string "" if no address found.
+	 */
+	public String getExtractAddress() {
+		return this.address;
 	}
 
 	/**
@@ -57,6 +68,7 @@ public class ScriptEngine {
 	public static ScriptEngine parse(byte[] sigScript, byte[] outScript) {
 		int n = 0;
 		List<Op> list = new ArrayList<>();
+		String address = null;
 		try (BitcoinInput input = new BitcoinInput(new ByteArrayInputStream(BytesUtils.concat(sigScript, outScript)))) {
 			while ((n = input.read()) != (-1)) {
 				if (n >= 0x01 && n <= 0x4b) {
@@ -64,6 +76,10 @@ public class ScriptEngine {
 					Op op = new DataOp(data);
 					list.add(op);
 					log.info("OP: " + op);
+					if (n == 20 && address == null) {
+						// 20 bytes data treats as Hash160:
+						address = Secp256k1Utils.hash160PublicKeyToAddress(data);
+					}
 				} else {
 					Op op = Ops.getOp(n);
 					if (op == null) {
@@ -76,7 +92,9 @@ public class ScriptEngine {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		return new ScriptEngine(list);
+		ScriptEngine engine = new ScriptEngine(list);
+		engine.address = address == null ? "" : address;
+		return engine;
 	}
 
 	@Override

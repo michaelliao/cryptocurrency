@@ -7,7 +7,7 @@ public abstract class Op {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	private String name;
+	public final String name;
 
 	public Op(String name) {
 		this.name = name;
