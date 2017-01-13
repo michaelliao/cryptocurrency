@@ -13,4 +13,13 @@ public interface BlockRepository extends CrudRepository<BlockEntity, String> {
 	 */
 	BlockEntity findFirstByOrderByHeightDesc();
 
+	/**
+	 * Find block by height.
+	 * 
+	 * @param height
+	 *            Block height.
+	 * @return The block.
+	 */
+	BlockEntity findOneByHeight(long height);
+
 }
