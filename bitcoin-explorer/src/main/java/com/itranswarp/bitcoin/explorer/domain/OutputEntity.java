@@ -25,7 +25,13 @@ public class OutputEntity {
 	 */
 	@Id
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH + 10)
-	public String txoHash;
+	public String outputHash;
+
+	/**
+	 * Tx hash as reference
+	 */
+	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
+	public String txHash;
 
 	@Column(nullable = false, updatable = false)
 	public long amount;
@@ -56,12 +62,12 @@ public class OutputEntity {
 
 	@Transient
 	public String getTxHash() {
-		return this.txoHash.substring(0, EntityConstants.HASH_LENGTH);
+		return this.outputHash.substring(0, EntityConstants.HASH_LENGTH);
 	}
 
 	@Transient
 	public int getIndex() {
-		return Integer.parseInt(this.txoHash.substring(EntityConstants.HASH_LENGTH + 1));
+		return Integer.parseInt(this.outputHash.substring(EntityConstants.HASH_LENGTH + 1));
 	}
 
 }
