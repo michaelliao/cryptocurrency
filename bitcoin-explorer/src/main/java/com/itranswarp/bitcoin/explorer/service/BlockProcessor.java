@@ -2,16 +2,19 @@ package com.itranswarp.bitcoin.explorer.service;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.explorer.domain.BlockEntity;
-import com.itranswarp.bitcoin.explorer.domain.OutEntity;
+import com.itranswarp.bitcoin.explorer.domain.OutputEntity;
 import com.itranswarp.bitcoin.explorer.domain.TxEntity;
 import com.itranswarp.bitcoin.explorer.repository.BlockRepository;
-import com.itranswarp.bitcoin.explorer.repository.OutRepository;
+import com.itranswarp.bitcoin.explorer.repository.OutputRepository;
 import com.itranswarp.bitcoin.explorer.repository.TxRepository;
+import com.itranswarp.bitcoin.script.ScriptEngine;
 import com.itranswarp.bitcoin.struct.Block;
 import com.itranswarp.bitcoin.struct.Transaction;
 import com.itranswarp.bitcoin.struct.TxIn;
@@ -21,6 +24,8 @@ import com.itranswarp.bitcoin.util.HashUtils;
 @Component
 public class BlockProcessor {
 
+	final Log log = LogFactory.getLog(getClass());
+
 	@Autowired
 	BlockRepository blockRepository;
 
@@ -28,7 +33,7 @@ public class BlockProcessor {
 	TxRepository txRepository;
 
 	@Autowired
-	OutRepository outRepository;
+	OutputRepository outputRepository;
 
 	@Transactional(Transactional.TxType.REQUIRES_NEW)
 	public BlockEntity processBlock(Block block) {
@@ -56,25 +61,31 @@ public class BlockProcessor {
 			// mark previous outputs as spent:
 			long totalInput = 0;
 			for (TxIn txin : tx.tx_ins) {
-				final OutEntity out = outRepository
-						.findOne(HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash) + "#"
-								+ txin.previousOutput.index);
-				out.spent = true;
-				out.sigScript = HashUtils.toHexString(txin.sigScript);
-				outRepository.save(out);
-				totalInput += out.amount;
+				// ignore coin base:
+				if (!HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash).equals(BitcoinConstants.ZERO_HASH)) {
+					final OutputEntity out = outputRepository
+							.findOne(HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash) + "#"
+									+ txin.previousOutput.index);
+					out.spent = true;
+					out.sigScript = HashUtils.toHexString(txin.sigScript);
+					outputRepository.save(out);
+					log.info("Mark output " + out.txoHash + " as spent...");
+					totalInput += out.amount;
+				}
 			}
 			// save new outputs as unspent:
 			long totalOutput = 0;
 			for (int outputIndex = 0; outputIndex < tx.tx_outs.length; outputIndex++) {
 				final TxOut txout = tx.tx_outs[outputIndex];
-				final OutEntity o = new OutEntity();
+				final OutputEntity o = new OutputEntity();
 				o.txoHash = txHash + "#" + outputIndex;
 				o.amount = txout.value;
 				o.pkScript = HashUtils.toHexString(txout.pk_script);
 				o.sigScript = "";
 				o.spent = false;
-				outRepository.save(o);
+				o.address = ScriptEngine.parse(EMPTY_BYTES, txout.pk_script).getExtractAddress();
+				outputRepository.save(o);
+				log.info("Create new unspent output " + o.txoHash + "...");
 				totalOutput += o.amount;
 			}
 			final TxEntity txEntity = new TxEntity();
@@ -88,7 +99,10 @@ public class BlockProcessor {
 			txEntity.lockTime = tx.lock_time;
 			txEntity.version = tx.version;
 			txRepository.save(txEntity);
+			log.info("Create new transaction " + txEntity.txHash + "...");
 		}
 		return blockEntity;
 	}
+
+	static final byte[] EMPTY_BYTES = new byte[0];
 }

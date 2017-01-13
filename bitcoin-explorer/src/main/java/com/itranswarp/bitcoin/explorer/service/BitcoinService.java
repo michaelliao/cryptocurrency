@@ -22,7 +22,7 @@ import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.explorer.domain.BlockEntity;
 import com.itranswarp.bitcoin.explorer.repository.BlockRepository;
-import com.itranswarp.bitcoin.explorer.repository.OutRepository;
+import com.itranswarp.bitcoin.explorer.repository.OutputRepository;
 import com.itranswarp.bitcoin.explorer.repository.TxRepository;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.p2p.MessageListener;
@@ -82,7 +82,7 @@ public class BitcoinService implements MessageListener {
 	TxRepository txRepository;
 
 	@Autowired
-	OutRepository outRepository;
+	OutputRepository outputRepository;
 
 	@PostConstruct
 	public void init() throws IOException {

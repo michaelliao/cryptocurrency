@@ -17,8 +17,8 @@ import javax.persistence.Transient;
  * @author liaoxuefeng
  */
 @Entity
-@Table(name = "out", indexes = { @Index(name = "idx_address", columnList = "address") })
-public class OutEntity {
+@Table(name = "output", indexes = { @Index(name = "idx_address", columnList = "address") })
+public class OutputEntity {
 
 	/**
 	 * Tx output hash and index: xxx...xxx#12
@@ -33,19 +33,19 @@ public class OutEntity {
 	/**
 	 * The pkScript stores as hex string.
 	 */
-	@Column(nullable = false, updatable = false, length = 20000)
+	@Column(nullable = false, updatable = false, length = 10000)
 	public String pkScript;
 
 	/**
 	 * Address from parsed script.
 	 */
-	@Column(nullable = false, updatable = false, length = 1000)
+	@Column(nullable = false, updatable = false, length = 100)
 	public String address;
 
 	/**
 	 * The sigScript stores as hex string.
 	 */
-	@Column(nullable = false, updatable = true, length = 20000)
+	@Column(nullable = false, updatable = true, length = 5000)
 	public String sigScript;
 
 	/**

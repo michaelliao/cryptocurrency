@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(indexes = @Index(name = "idx_block_hash", columnList = "blockHash"))
+@Table(name = "tx", indexes = @Index(name = "idx_block_hash", columnList = "blockHash"))
 public class TxEntity {
 
 	@Id
