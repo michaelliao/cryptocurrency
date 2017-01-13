@@ -46,12 +46,35 @@ public class ScriptEngineTest {
 		assertEquals("76a91446af3fb481837fadbb421727f9959c2d32a3682988ac", HashUtils.toHexString(outScript));
 		// execute:
 		ScriptEngine engine = ScriptEngine.parse(sigScript, outScript);
+
 		System.out.println(engine);
 		Map<String, TxOut> prevUtxos = new HashMap<>();
 		for (int i = 0; i < prevTx.getTxOutCount(); i++) {
 			prevUtxos.put(HashUtils.toHexStringAsLittleEndian(prevTx.getTxHash()) + "#" + i, prevTx.tx_outs[i]);
 		}
 		assertTrue(engine.execute(pizzaTx, 0, prevUtxos));
+		assertEquals("17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ", engine.getExtractAddress());
 	}
 
+	@Test
+	public void testGetAddress() throws Exception {
+		// pizza transaction:
+		// https://webbtc.com/tx/cca7507897abc89628f450e8b1e0c6fca4ec3f7b34cccf55f3f531c659ff4d79
+		String pizzaTxHash = "cca7507897abc89628f450e8b1e0c6fca4ec3f7b34cccf55f3f531c659ff4d79";
+		byte[] pizzaTxData = ClasspathUtils.loadAsBytes("/tx-" + pizzaTxHash + ".dat");
+		Transaction pizzaTx = null;
+		try (BitcoinInput input = new BitcoinInput(pizzaTxData)) {
+			pizzaTx = new Transaction(input);
+		}
+		assertEquals(1, pizzaTx.getTxInCount());
+		assertEquals(2, pizzaTx.getTxOutCount());
+		// output 1:
+		TxOut out0 = pizzaTx.tx_outs[0];
+		ScriptEngine engine0 = ScriptEngine.parse(new byte[0], out0.pk_script);
+		assertEquals("1MLh2UVHgonJY4ZtsakoXtkcXDJ2EPU6RY", engine0.getExtractAddress());
+		// output 2:
+		TxOut out1 = pizzaTx.tx_outs[1];
+		ScriptEngine engine1 = ScriptEngine.parse(new byte[0], out1.pk_script);
+		assertEquals("13TETb2WMr58mexBaNq1jmXV1J7Abk2tE2", engine1.getExtractAddress());
+	}
 }

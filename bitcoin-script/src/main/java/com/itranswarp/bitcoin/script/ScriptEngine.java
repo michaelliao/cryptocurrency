@@ -79,6 +79,9 @@ public class ScriptEngine {
 					if (n == 20 && address == null) {
 						// 20 bytes data treats as Hash160:
 						address = Secp256k1Utils.hash160PublicKeyToAddress(data);
+					} else if (n == 65 && address == null) {
+						// 65 bytes uncompressed data:
+						address = Secp256k1Utils.uncompressedPublicKeyToAddress(data);
 					}
 				} else {
 					Op op = Ops.getOp(n);
