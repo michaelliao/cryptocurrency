@@ -28,6 +28,9 @@ public class BlockEntity {
 	public long timestamp;
 
 	@Column(nullable = false, updatable = false)
+	public long txCount;
+
+	@Column(nullable = false, updatable = false)
 	public long bits;
 
 	@Column(nullable = false, updatable = false)

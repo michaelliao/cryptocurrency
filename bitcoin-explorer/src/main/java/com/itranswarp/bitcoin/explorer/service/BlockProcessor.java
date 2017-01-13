@@ -46,6 +46,7 @@ public class BlockProcessor {
 		final String blockHash = HashUtils.toHexStringAsLittleEndian(block.getBlockHash());
 		BlockEntity blockEntity = new BlockEntity();
 		blockEntity.blockHash = blockHash; // pk
+		blockEntity.txCount = block.txns.length; // how many tx
 		blockEntity.bits = block.header.bits;
 		blockEntity.merkleHash = HashUtils.toHexStringAsLittleEndian(block.header.merkleHash);
 		blockEntity.nonce = block.header.nonce;
