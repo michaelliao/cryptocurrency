@@ -28,10 +28,16 @@ public class OutputEntity {
 	public String outputHash;
 
 	/**
-	 * Tx hash as reference
+	 * Tx hash as reference.
 	 */
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String txHash;
+
+	/**
+	 * index starts from 0.
+	 */
+	@Column(nullable = false, updatable = false)
+	public long outputIndex;
 
 	@Column(nullable = false, updatable = false)
 	public long amount;

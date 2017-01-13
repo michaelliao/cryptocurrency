@@ -82,6 +82,7 @@ public class BlockProcessor {
 				final OutputEntity o = new OutputEntity();
 				o.outputHash = txHash + "#" + outputIndex;
 				o.txHash = txHash;
+				o.outputIndex = outputIndex;
 				o.amount = txout.value;
 				o.pkScript = HashUtils.toHexString(txout.pk_script);
 				o.sigScript = "";
