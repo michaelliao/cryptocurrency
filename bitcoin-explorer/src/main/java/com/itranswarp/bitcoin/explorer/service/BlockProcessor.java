@@ -54,6 +54,7 @@ public class BlockProcessor {
 		blockEntity.height = height;
 		blockEntity.timestamp = block.header.timestamp;
 		blockEntity.version = block.header.version;
+		blockEntity.size = block.toByteArray().length;
 		blockRepository.save(blockEntity);
 		// store tx:
 		for (int txIndex = 0; txIndex < block.txns.length; txIndex++) {

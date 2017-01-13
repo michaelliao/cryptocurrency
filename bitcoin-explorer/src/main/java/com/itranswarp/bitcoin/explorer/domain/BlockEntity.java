@@ -6,18 +6,23 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "block", uniqueConstraints = { @UniqueConstraint(name = "uni_prev_hash", columnNames = "prevHash"),
 		@UniqueConstraint(name = "uni_height", columnNames = "height") })
 public class BlockEntity {
 
+	@JsonProperty("hash")
 	@Id
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String blockHash;
 
+	@JsonProperty("prev_block")
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String prevHash;
 
+	@JsonProperty("mrkl_root")
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String merkleHash;
 
@@ -27,6 +32,7 @@ public class BlockEntity {
 	@Column(nullable = false, updatable = false)
 	public long timestamp;
 
+	@JsonProperty("n_tx")
 	@Column(nullable = false, updatable = false)
 	public long txCount;
 
@@ -36,6 +42,7 @@ public class BlockEntity {
 	@Column(nullable = false, updatable = false)
 	public long nonce;
 
+	@JsonProperty("ver")
 	@Column(nullable = false, updatable = false)
 	public long version;
 

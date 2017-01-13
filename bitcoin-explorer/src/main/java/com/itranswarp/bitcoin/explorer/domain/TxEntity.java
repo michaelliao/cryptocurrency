@@ -7,10 +7,13 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @Entity
 @Table(name = "tx", indexes = @Index(name = "idx_block_hash", columnList = "blockHash"))
 public class TxEntity {
 
+	@JsonProperty("hash")
 	@Id
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String txHash;
@@ -18,6 +21,7 @@ public class TxEntity {
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String blockHash;
 
+	@JsonProperty("index")
 	@Column(nullable = false, updatable = false)
 	public long txIndex;
 
@@ -36,6 +40,7 @@ public class TxEntity {
 	@Column(nullable = false, updatable = false)
 	public long lockTime;
 
+	@JsonProperty("ver")
 	@Column(nullable = false, updatable = false)
 	public long version;
 

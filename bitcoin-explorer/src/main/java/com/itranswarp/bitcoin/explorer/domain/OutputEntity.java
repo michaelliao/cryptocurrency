@@ -17,7 +17,8 @@ import javax.persistence.Transient;
  * @author liaoxuefeng
  */
 @Entity
-@Table(name = "output", indexes = { @Index(name = "idx_address", columnList = "address") })
+@Table(name = "output", indexes = { @Index(name = "idx_tx_hash", columnList = "txHash"),
+		@Index(name = "idx_address", columnList = "address") })
 public class OutputEntity {
 
 	/**
@@ -69,11 +70,6 @@ public class OutputEntity {
 	@Transient
 	public String getTxHash() {
 		return this.outputHash.substring(0, EntityConstants.HASH_LENGTH);
-	}
-
-	@Transient
-	public int getIndex() {
-		return Integer.parseInt(this.outputHash.substring(EntityConstants.HASH_LENGTH + 1));
 	}
 
 }
