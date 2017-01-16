@@ -1,11 +1,11 @@
-{% extends("_base") %}
+{% extends("_base.html") %}
 
 {% block title %}
-	Bitcoin Block #
+	Bitcoin Block #{{ block.blockHash }}
 {% endblock %}
 
 {% block main %}
-	<h1>Block height/#hash</h1>
+	<h3>Block {{ block.height }}/#{{ block.blockHash}}</h3>
 	<table class="uk-table uk-table-striped">
 		<thead>
 			<tr>
@@ -16,57 +16,58 @@
 		<tbody>
 			<tr>
 				<td>区块哈希</td>
-				<td>000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</td>
+				<td>{{ block.blockHash}}</td>
 			</tr>
 			<tr>
 				<td>上一个区块</td>
-				<td>000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</td>
+				<td>{{ block.prevHash}}</td>
 			</tr>
 			<tr>
 				<td>下一个区块</td>
-				<td>000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</td>
+				<td>???</td>
 			</tr>
 			<tr>
 				<td>Merkle Root</td>
-				<td>000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</td>
+				<td>{{ block.merkleHash}}</td>
 			</tr>
 			<tr>
 				<td>创建时间</td>
-				<td>2017-01-01 04:58:50</td>
+				<td>{{ block.timestamp | smartdt }}</td>
 			</tr>
 			<tr>
 				<td>高度</td>
-				<td>446022</td>
+				<td>{{ block.height }}</td>
 			</tr>
 			<tr>
 				<td>区块大小</td>
-				<td>216.9 kB</td>
+				<td>{{ block.size | size }}</td>
 			</tr>
 			<tr>
 				<td>交易额</td>
-				<td><i class="uk-icon-bitcoin"></i> 512.5</td>
+				<td><i class="uk-icon-bitcoin"></i> ???</td>
 			</tr>
 			<tr>
 				<td>计算难度</td>
-				<td>317,688,400,354</td>
+				<td>???</td>
 			</tr>
 			<tr>
 				<td>区块奖励</td>
-				<td><i class="uk-icon-bitcoin"></i> 12.5</td>
+				<td><i class="uk-icon-bitcoin"></i> ???</td>
 			</tr>
 			<tr>
 				<td>交易数量</td>
-				<td>522</td>
+				<td>{{ block.txCount }}</td>
 			</tr>
 		</tbody>
 	</table>
 	<h1>交易</h1>
+{% for tx in txs %}
 	<hr>
 	<table class="uk-table">
 		<thead>
 			<tr>
-				<th style="width:50%;"><a href="/tx/xx">000000000000000002af8890df67d62c5a71f2db09649fb13a907b0df6d5b32a</a></td>
-				<th style="width:50%; text-align:right;">2017-01-01 04:58:50</td>
+				<th style="width:50%;"><a href="/tx/{{ tx.txHash }}">{{ tx.txHash }}</a></td>
+				<th style="width:50%; text-align:right;">{{ tx.txIndex }}</td>
 			</tr>
 		</thead>
 		<tbody>
@@ -106,6 +107,7 @@
 			</tr>
 		</tbody>
 	</table>
+{% endfor %}
 	<hr>
 	<table class="uk-table">
 		<thead>

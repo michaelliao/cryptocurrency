@@ -5,9 +5,12 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -21,6 +24,11 @@ import org.springframework.stereotype.Component;
 import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.explorer.domain.BlockEntity;
+import com.itranswarp.bitcoin.explorer.domain.InputBean;
+import com.itranswarp.bitcoin.explorer.domain.OutputBean;
+import com.itranswarp.bitcoin.explorer.domain.OutputEntity;
+import com.itranswarp.bitcoin.explorer.domain.TxEntity;
+import com.itranswarp.bitcoin.explorer.exception.ApiNotFoundException;
 import com.itranswarp.bitcoin.explorer.repository.BlockRepository;
 import com.itranswarp.bitcoin.explorer.repository.OutputRepository;
 import com.itranswarp.bitcoin.explorer.repository.TxRepository;
@@ -130,6 +138,9 @@ public class BitcoinService implements MessageListener {
 		return this.lastBlockHash;
 	}
 
+	protected static final Pattern PATTERN_SHA256 = Pattern.compile("^[0-9a-f]{64}$");
+	protected static final Pattern PATTERN_INT = Pattern.compile("^[0-9]{1,8}$");
+
 	/**
 	 * Get block entity by hash.
 	 * 
@@ -137,8 +148,47 @@ public class BitcoinService implements MessageListener {
 	 *            block hash.
 	 * @return Block or null if not found.
 	 */
-	public BlockEntity getBlock(String hash) {
-		return checkNonNull(blockRepository.findOne(hash), "Block not found.");
+	public BlockEntity getBlock(String hashOrHeight) {
+		BlockEntity block = null;
+		if (PATTERN_SHA256.matcher(hashOrHeight).matches()) {
+			block = blockRepository.findOne(hashOrHeight);
+		} else if (PATTERN_INT.matcher(hashOrHeight).matches()) {
+			block = blockRepository.findOneByHeight(Long.parseLong(hashOrHeight));
+		}
+		if (block == null) {
+			throw new ApiNotFoundException("Block not found");
+		}
+		block.txs = txRepository.findByBlockHashOrderByTxIndex(block.blockHash);
+		for (TxEntity tx : block.txs) {
+			tx.inputs = toInputBeans(outputRepository.findByTxinHashOrderByTxinIndex(tx.txHash));
+			tx.outputs = toOutputBeans(outputRepository.findByTxoutHashOrderByTxoutIndex(tx.txHash));
+		}
+		return block;
+	}
+
+	public TxEntity getTx(String hash) {
+		TxEntity txEntity = null;
+		if (PATTERN_SHA256.matcher(hash).matches()) {
+			txEntity = txRepository.findOne(hash);
+		}
+		if (txEntity == null) {
+			throw new ApiNotFoundException("Tx not found");
+		}
+		txEntity.inputs = toInputBeans(outputRepository.findByTxinHashOrderByTxinIndex(hash));
+		txEntity.outputs = toOutputBeans(outputRepository.findByTxoutHashOrderByTxoutIndex(hash));
+		return txEntity;
+	}
+
+	List<InputBean> toInputBeans(List<OutputEntity> entities) {
+		return entities.stream().map((entity) -> {
+			return new InputBean(entity);
+		}).collect(Collectors.toList());
+	}
+
+	List<OutputBean> toOutputBeans(List<OutputEntity> entities) {
+		return entities.stream().map((entity) -> {
+			return new OutputBean(entity);
+		}).collect(Collectors.toList());
 	}
 
 	/**

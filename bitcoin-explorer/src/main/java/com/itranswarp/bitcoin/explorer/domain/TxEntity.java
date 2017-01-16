@@ -1,5 +1,7 @@
 package com.itranswarp.bitcoin.explorer.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -7,6 +9,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -44,16 +47,24 @@ public class TxEntity {
 	@Column(nullable = false, updatable = false)
 	public long version;
 
+	@JsonIgnore
 	@Transient
-	public boolean isCoinBase() {
+	public boolean isCoinbase() {
 		return this.inputCount == 0;
 	}
 
 	@Transient
 	public long fees() {
-		if (isCoinBase()) {
+		if (isCoinbase()) {
 			return 0;
 		}
 		return totalOutput - totalInput;
 	}
+
+	@Transient
+	public List<InputBean> inputs;
+
+	@Transient
+	public List<OutputBean> outputs;
+
 }

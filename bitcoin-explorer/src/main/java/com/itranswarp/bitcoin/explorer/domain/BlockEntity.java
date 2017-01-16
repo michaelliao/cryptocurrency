@@ -1,9 +1,12 @@
 package com.itranswarp.bitcoin.explorer.domain;
 
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,11 +21,9 @@ public class BlockEntity {
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String blockHash;
 
-	@JsonProperty("prev_block")
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String prevHash;
 
-	@JsonProperty("mrkl_root")
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
 	public String merkleHash;
 
@@ -51,4 +52,7 @@ public class BlockEntity {
 
 	@Column(nullable = false, updatable = false)
 	public long size;
+
+	@Transient
+	public List<TxEntity> txs;
 }

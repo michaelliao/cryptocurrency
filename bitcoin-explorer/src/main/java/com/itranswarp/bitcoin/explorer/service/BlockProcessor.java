@@ -63,13 +63,16 @@ public class BlockProcessor {
 			// mark previous outputs as spent:
 			long totalInput = 0;
 			long inputCount = 0;
-			for (TxIn txin : tx.tx_ins) {
+			for (int txinIndex = 0; txinIndex < tx.tx_ins.length; txinIndex++) {
+				TxIn txin = tx.tx_ins[txinIndex];
 				// ignore coin base:
 				if (!HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash).equals(BitcoinConstants.ZERO_HASH)) {
 					final OutputEntity out = outputRepository
 							.findOne(HashUtils.toHexStringAsLittleEndian(txin.previousOutput.hash) + "#"
 									+ txin.previousOutput.index);
-					out.spent = true;
+					// spent:
+					out.txinHash = txHash;
+					out.txinIndex = txinIndex;
 					out.sigScript = HashUtils.toHexString(txin.sigScript);
 					outputRepository.save(out);
 					log.info("Mark output " + out.outputHash + " as spent...");
@@ -79,16 +82,17 @@ public class BlockProcessor {
 			}
 			// save new outputs as unspent:
 			long totalOutput = 0;
-			for (int outputIndex = 0; outputIndex < tx.tx_outs.length; outputIndex++) {
-				final TxOut txout = tx.tx_outs[outputIndex];
+			for (int txoutIndex = 0; txoutIndex < tx.tx_outs.length; txoutIndex++) {
+				final TxOut txout = tx.tx_outs[txoutIndex];
 				final OutputEntity o = new OutputEntity();
-				o.outputHash = txHash + "#" + outputIndex;
-				o.txHash = txHash;
-				o.outputIndex = outputIndex;
+				o.outputHash = txHash + "#" + txoutIndex;
+				o.txoutHash = txHash;
+				o.txoutIndex = txoutIndex;
 				o.amount = txout.value;
 				o.pkScript = HashUtils.toHexString(txout.pk_script);
 				o.sigScript = "";
-				o.spent = false;
+				o.txinHash = "";
+				o.txinIndex = 0;
 				o.address = ScriptEngine.parse(EMPTY_BYTES, txout.pk_script).getExtractAddress();
 				outputRepository.save(o);
 				log.info("Create new unspent output " + o.outputHash + "...");

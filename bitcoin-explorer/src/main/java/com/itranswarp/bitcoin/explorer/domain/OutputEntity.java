@@ -17,28 +17,40 @@ import javax.persistence.Transient;
  * @author liaoxuefeng
  */
 @Entity
-@Table(name = "output", indexes = { @Index(name = "idx_tx_hash", columnList = "txHash"),
-		@Index(name = "idx_address", columnList = "address") })
+@Table(name = "output", indexes = { @Index(name = "idx_txout_hash", columnList = "txoutHash"),
+		@Index(name = "idx_txin_hash", columnList = "txinHash"), @Index(name = "idx_address", columnList = "address") })
 public class OutputEntity {
 
 	/**
-	 * Tx output hash and index: xxx...xxx#12
+	 * Output hash = txout hash + '#' + txout index: xxx...xxx#12
 	 */
 	@Id
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH + 10)
 	public String outputHash;
 
 	/**
-	 * Tx hash as reference.
+	 * Tx out hash as reference.
 	 */
 	@Column(nullable = false, updatable = false, length = EntityConstants.HASH_LENGTH)
-	public String txHash;
+	public String txoutHash;
 
 	/**
 	 * index starts from 0.
 	 */
 	@Column(nullable = false, updatable = false)
-	public long outputIndex;
+	public long txoutIndex;
+
+	/**
+	 * Spent tx (tx-in) hash as reference.
+	 */
+	@Column(nullable = false, length = EntityConstants.HASH_LENGTH)
+	public String txinHash;
+
+	/**
+	 * index starts from 0.
+	 */
+	@Column(nullable = false)
+	public long txinIndex;
 
 	@Column(nullable = false, updatable = false)
 	public long amount;
@@ -58,18 +70,15 @@ public class OutputEntity {
 	/**
 	 * The sigScript stores as hex string.
 	 */
-	@Column(nullable = false, updatable = true, length = 5000)
+	@Column(nullable = false, length = 5000)
 	public String sigScript;
 
 	/**
 	 * Is this output spent?
 	 */
-	@Column(nullable = false, updatable = true)
-	public boolean spent;
-
 	@Transient
-	public String getTxHash() {
-		return this.outputHash.substring(0, EntityConstants.HASH_LENGTH);
+	public boolean isSpent() {
+		return txinHash != null && !txinHash.isEmpty();
 	}
 
 }
