@@ -38,6 +38,9 @@ public final class BitcoinConstants {
 	public static final byte PUBLIC_KEY_PREFIX = 0x04;
 	public static final byte[] PUBLIC_KEY_PREFIX_ARRAY = { PUBLIC_KEY_PREFIX };
 
+	public static final byte[] PUBLIC_KEY_COMPRESSED_02 = { 0x02 };
+	public static final byte[] PUBLIC_KEY_COMPRESSED_03 = { 0x03 };
+
 	/**
 	 * Private key prefix: 0x80.
 	 */
