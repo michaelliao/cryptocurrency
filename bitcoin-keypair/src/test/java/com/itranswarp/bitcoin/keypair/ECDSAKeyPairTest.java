@@ -7,12 +7,14 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
+import com.itranswarp.bitcoin.util.HashUtils;
 
 public class ECDSAKeyPairTest {
 
 	@Test
 	public void testGeneratePrivateKey() throws Exception {
 		byte[] key = ECDSAKeyPair.generatePrivateKey();
+		System.out.println("Key: " + HashUtils.toHexString(key));
 		int n = key[0] & 0xff;
 		assertTrue(n > 0 && n < 0xff);
 		ECDSAKeyPair.checkPrivateKey(new BigInteger(1, key));

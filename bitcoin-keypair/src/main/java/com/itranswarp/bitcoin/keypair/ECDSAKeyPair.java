@@ -151,24 +151,22 @@ public class ECDSAKeyPair {
 	/**
 	 * generate random private key between 0x00ffff... ~ 0xff0000...
 	 * 
-	 * @return Private key as byte[256].
+	 * @return Private key as byte[32].
 	 */
 	public static byte[] generatePrivateKey() {
-		byte[] hash = null;
-		int first;
 		SecureRandom sr;
 		try {
 			sr = SecureRandom.getInstanceStrong();
 		} catch (NoSuchAlgorithmException e) {
 			sr = new SecureRandom();
 		}
+		int first;
+		byte[] key = new byte[32];
 		do {
-			byte[] rnd = new byte[200];
-			sr.nextBytes(rnd);
-			hash = HashUtils.doubleSha256(rnd);
-			first = hash[0] & 0xff;
+			sr.nextBytes(key);
+			first = key[0] & 0xff;
 		} while (first == 0x00 || first == 0xff);
-		return hash;
+		return key;
 	}
 
 	static byte[] bigIntegerToBytes(BigInteger bi, int length) {
