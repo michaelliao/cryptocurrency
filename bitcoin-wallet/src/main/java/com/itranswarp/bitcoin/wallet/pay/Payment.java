@@ -1,5 +1,6 @@
 package com.itranswarp.bitcoin.wallet.pay;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import com.itranswarp.bitcoin.BitcoinException;
 import com.itranswarp.bitcoin.constant.BitcoinConstants;
 import com.itranswarp.bitcoin.io.BitcoinOutput;
-import com.itranswarp.bitcoin.struct.Transaction;
-import com.itranswarp.bitcoin.struct.TxOut;
+import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
@@ -19,7 +19,7 @@ public class Payment {
 
 	final Log log = LogFactory.getLog(getClass());
 
-	List<UTxO> outs = new ArrayList<>();
+	List<UTxO> utxos = new ArrayList<>();
 	List<PayTo> pays = new ArrayList<>();
 
 	public Payment() {
@@ -33,21 +33,27 @@ public class Payment {
 	 * @param outputIndex
 	 * @return
 	 */
-	public Payment alloc(Transaction tx, int outputIndex, BigInteger privateKey) {
-		this.outs.add(new UTxO(tx, outputIndex, privateKey));
+	public Payment alloc(String privateKey, String txHash, int index, long amount, byte[] pkScript) {
+		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
+		this.utxos.add(new UTxO(kp.getPrivateKey(), kp.toPublicKey(), txHash, index, amount, pkScript));
 		return this;
 	}
 
-	public Payment payTo(byte[] address, long amount) {
-		PayTo p = new PayTo(address, amount);
-		this.pays.add(p);
+	public Payment payTo(String address, long amount) {
+		this.pays.add(new PayTo(address, amount));
 		return this;
 	}
 
-	public byte[] pay() {
+	public byte[] buildTransaction() {
 		// verify:
-		long total_unspend = outs.stream().mapToLong((utxo) -> {
-			return utxo.out.value;
+		if (utxos.isEmpty()) {
+			throw new IllegalArgumentException("No UTXO alloc.");
+		}
+		if (pays.isEmpty()) {
+			throw new IllegalArgumentException("No pay to specified.");
+		}
+		long total_unspend = utxos.stream().mapToLong((utxo) -> {
+			return utxo.amount;
 		}).sum();
 		long total_spend = pays.stream().mapToLong((pay) -> {
 			return pay.amount;
@@ -56,6 +62,8 @@ public class Payment {
 			log.warn("Cannot create transaction for inputs < outputs.");
 			throw new BitcoinException("Cannot create transaction for inputs < outputs.");
 		}
+		log.info("Build transaction: " + toBtc(total_unspend) + " -> " + toBtc(total_spend) + " (fees: "
+				+ toBtc(total_unspend - total_spend) + ")");
 		// build transaction:
 		return buildRawTransaction();
 	}
@@ -65,11 +73,11 @@ public class Payment {
 		// tx version:
 		output.writeInt(BitcoinConstants.TX_VERSION);
 		// number of inputs:
-		output.writeVarInt(this.outs.size());
+		output.writeVarInt(this.utxos.size());
 		// each inputs:
-		for (UTxO utxo : this.outs) {
+		for (UTxO utxo : this.utxos) {
 			// tx hash and index:
-			output.write(utxo.tx.getTxHash());
+			output.write(HashUtils.toBytesAsLittleEndian(utxo.txHash));
 			output.writeUnsignedInt(utxo.index);
 			// script sig:
 			output.write(createScriptSig(utxo));
@@ -85,11 +93,9 @@ public class Payment {
 			// standard output script:
 			// OP_DUP OP_HASH160 <pubkey> OP_EQUALVERIFY OP_CHECKSIG
 			output.write(generateOutputScript(pay));
-			// lock time:
-			output.writeInt(0);
 		}
-		// sign type: SIGHASH_ALL
-		output.writeInt(BitcoinConstants.SIGHASH_ALL);
+		// lock time:
+		output.writeInt(0);
 		return output.toByteArray();
 	}
 
@@ -99,20 +105,20 @@ public class Payment {
 		// tx version:
 		output.writeInt(BitcoinConstants.TX_VERSION);
 		// number of inputs:
-		output.writeVarInt(this.outs.size());
+		output.writeVarInt(this.utxos.size());
 		// each inputs:
-		for (UTxO utxo : this.outs) {
+		for (UTxO utxo : this.utxos) {
 			// tx hash and index:
-			output.write(utxo.tx.getTxHash());
+			output.write(HashUtils.toBytesAsLittleEndian(utxo.txHash));
 			output.writeUnsignedInt(utxo.index);
 			if (thisUtxo == utxo) {
 				// pk script:
-				output.writeVarInt(utxo.out.pk_script.length);
-				output.write(utxo.out.pk_script);
+				output.writeVarInt(utxo.pkScript.length);
+				output.write(utxo.pkScript);
 			} else {
 				output.writeVarInt(0);
 			}
-			// sequence always be 0xffffff:
+			// sequence always be 0xffffffff:
 			output.writeUnsignedInt(0xffffffffL);
 		}
 		// number of outputs:
@@ -124,19 +130,24 @@ public class Payment {
 			// standard output script:
 			// OP_DUP OP_HASH160 <pubkey> OP_EQUALVERIFY OP_CHECKSIG
 			output.write(generateOutputScript(pay));
-			// lock time:
-			output.writeInt(0);
 		}
+		// lock time:
+		//output.writeInt(0);
 		// sign type: SIGHASH_ALL
 		output.writeInt(BitcoinConstants.SIGHASH_ALL);
+		// sign it:
 		byte[] payload = output.toByteArray();
 		byte[] dhash = HashUtils.doubleSha256(payload);
 		byte[] sig = Secp256k1Utils.sign(dhash, thisUtxo.privateKey);
-		byte[] pubkey = Secp256k1Utils.toPublicKey(thisUtxo.privateKey);
+		byte[] pubkey = thisUtxo.publicKey;
+		log.info("sig: " + HashUtils.toHexString(sig));
+		log.info("pk: " + HashUtils.toHexString(pubkey));
 		BitcoinOutput sigOutput = new BitcoinOutput();
-		sigOutput.writeVarInt(sig.length + 1 + pubkey.length);
+		sigOutput.writeVarInt(sig.length + 3 + pubkey.length);
+		sigOutput.writeByte(sig.length + 1);
 		sigOutput.write(sig);
 		sigOutput.writeByte(BitcoinConstants.SIGHASH_ALL);
+		sigOutput.writeByte(pubkey.length);
 		sigOutput.write(pubkey);
 		return sigOutput.toByteArray();
 	}
@@ -149,27 +160,39 @@ public class Payment {
 		output.writeByte(0x76);
 		// OP_HASH160:
 		output.writeByte(0xa9);
+		// DATA 20:
+		output.writeByte(20);
 		// 20 byte pubkey hash160:
-		output.write(HashUtils.ripeMd160(HashUtils.sha256(pay.address)));
+		output.write(pay.address);
 		// OP_EQUALVERIFY:
 		output.writeByte(0x88);
 		// OP_CHECKSIG:
 		output.writeByte(0xac);
 		return output.toByteArray();
 	}
+
+	String toBtc(long satoshi) {
+		return "BTC " + BigDecimal.valueOf(satoshi).divide(N).toString();
+	}
+
+	final static BigDecimal N = BigDecimal.valueOf(100000000L);
 }
 
 class UTxO {
-	final Transaction tx;
+	final String txHash;
 	final int index;
-	final TxOut out;
+	final long amount;
+	final byte[] pkScript;
 	final BigInteger privateKey;
+	final byte[] publicKey;
 
-	public UTxO(Transaction tx, int index, BigInteger privateKey) {
-		this.tx = tx;
+	public UTxO(BigInteger privateKey, byte[] publicKey, String txHash, int index, long amount, byte[] pkScript) {
+		this.txHash = txHash;
 		this.index = index;
-		this.out = tx.tx_outs[index];
+		this.amount = amount;
+		this.pkScript = pkScript;
 		this.privateKey = privateKey;
+		this.publicKey = publicKey;
 	}
 
 }
@@ -178,8 +201,8 @@ class PayTo {
 	final byte[] address;
 	final long amount;
 
-	public PayTo(byte[] address, long amount) {
-		this.address = address;
+	public PayTo(String address, long amount) {
+		this.address = Secp256k1Utils.publicKeyAddressToBytes(address);
 		this.amount = amount;
 	}
 }
