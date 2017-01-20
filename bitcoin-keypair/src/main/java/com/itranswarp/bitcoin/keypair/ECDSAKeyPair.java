@@ -22,6 +22,7 @@ import com.itranswarp.bitcoin.util.Secp256k1Utils;
 public class ECDSAKeyPair {
 
 	private final BigInteger privateKey;
+	private final boolean isCompressed;
 
 	// public key can be cacluated by private key:
 	private BigInteger[] publicKey = null;
@@ -29,8 +30,9 @@ public class ECDSAKeyPair {
 	/**
 	 * Construct a keypair with private key.
 	 */
-	private ECDSAKeyPair(BigInteger privateKey) {
+	private ECDSAKeyPair(BigInteger privateKey, boolean isCompressed) {
 		this.privateKey = privateKey;
+		this.isCompressed = isCompressed;
 	}
 
 	/**
@@ -38,7 +40,7 @@ public class ECDSAKeyPair {
 	 */
 	public static ECDSAKeyPair of(String wif) {
 		byte[] key = parseWIF(wif);
-		return of(key);
+		return new ECDSAKeyPair(new BigInteger(1, key), !wif.startsWith("5"));
 	}
 
 	/**
@@ -53,7 +55,7 @@ public class ECDSAKeyPair {
 	 */
 	public static ECDSAKeyPair of(BigInteger privateKey) {
 		checkPrivateKey(privateKey);
-		return new ECDSAKeyPair(privateKey);
+		return new ECDSAKeyPair(privateKey, false);
 	}
 
 	/**
@@ -80,21 +82,34 @@ public class ECDSAKeyPair {
 		return BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
 	}
 
+	public String toEncodedUncompressedPublicKey() {
+		return Secp256k1Utils.uncompressedPublicKeyToAddress(toUncompressedPublicKey());
+	}
+
 	/**
-	 * Convert to java.security.PublicKey.
+	 * Convert to public key as compressed byte[].
 	 */
-	public static BigInteger[] toPublicKey(byte[] uncompressedPk) {
-		if (uncompressedPk == null || uncompressedPk.length != 65) {
-			throw new IllegalArgumentException("Invalid public key.");
+	public byte[] toCompressedPublicKey() {
+		BigInteger[] keys = getPublicKey();
+		byte[] xs = bigIntegerToBytes(keys[0], 32);
+		byte[] ys = bigIntegerToBytes(keys[1], 32);
+		if ((ys[31] & 0xff) % 2 == 0) {
+			return BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_COMPRESSED_02, xs);
+		} else {
+			return BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_COMPRESSED_03, xs);
 		}
-		if (uncompressedPk[0] != BitcoinConstants.PUBLIC_KEY_PREFIX) {
-			throw new IllegalArgumentException("Invalid public key.");
-		}
-		byte[] b1 = new byte[32];
-		byte[] b2 = new byte[32];
-		System.arraycopy(uncompressedPk, 1, b1, 0, 32);
-		System.arraycopy(uncompressedPk, 33, b2, 0, 32);
-		return new BigInteger[] { new BigInteger(1, b1), new BigInteger(1, b2) };
+	}
+
+	public String toEncodedCompressedPublicKey() {
+		return Secp256k1Utils.compressedPublicKeyToAddress(toCompressedPublicKey());
+	}
+
+	public String toEncodedPublicKey() {
+		return this.isCompressed ? toEncodedCompressedPublicKey() : toEncodedUncompressedPublicKey();
+	}
+
+	public byte[] toPublicKey() {
+		return this.isCompressed ? toCompressedPublicKey() : toUncompressedPublicKey();
 	}
 
 	/**
@@ -127,9 +142,22 @@ public class ECDSAKeyPair {
 	 * Get Wallet Import Format string defined in:
 	 * https://en.bitcoin.it/wiki/Wallet_import_format
 	 */
-	public String getWalletImportFormat() {
+	public String getWIF() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
 		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key);
+		byte[] hash = HashUtils.doubleSha256(extendedKey);
+		byte[] checksum = Arrays.copyOfRange(hash, 0, 4);
+		byte[] extendedKeyWithChecksum = BytesUtils.concat(extendedKey, checksum);
+		return Base58Utils.encode(extendedKeyWithChecksum);
+	}
+
+	/**
+	 * Get Compressed Wallet Import Format string defined in:
+	 * https://en.bitcoin.it/wiki/Wallet_import_format
+	 */
+	public String getCompressedWIF() {
+		byte[] key = bigIntegerToBytes(this.privateKey, 32);
+		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key, new byte[] { 0x01 });
 		byte[] hash = HashUtils.doubleSha256(extendedKey);
 		byte[] checksum = Arrays.copyOfRange(hash, 0, 4);
 		byte[] extendedKeyWithChecksum = BytesUtils.concat(extendedKey, checksum);
@@ -144,8 +172,13 @@ public class ECDSAKeyPair {
 		if (data[0] != BitcoinConstants.PRIVATE_KEY_PREFIX) {
 			throw new IllegalArgumentException("Leading byte is not 0x80.");
 		}
-		// remove first 0x80:
-		return Arrays.copyOfRange(data, 1, data.length);
+		if (wif.charAt(0) == '5') {
+			// remove first 0x80:
+			return Arrays.copyOfRange(data, 1, data.length);
+		} else {
+			// remove first 0x80 and last 0x01:
+			return Arrays.copyOfRange(data, 1, data.length - 1);
+		}
 	}
 
 	/**

@@ -132,6 +132,15 @@ public class Secp256k1Utils {
 		return _hash160PublicKeyToAddress(hash160);
 	}
 
+	public static String compressedPublicKeyToAddress(byte[] compressed) {
+		if (compressed.length != 33) {
+			throw new IllegalArgumentException(
+					"bad length of compressed bytes: expect 33 but actual " + compressed.length);
+		}
+		byte[] hash160 = HashUtils.ripeMd160(HashUtils.sha256(compressed));
+		return _hash160PublicKeyToAddress(hash160);
+	}
+
 	public static String hash160PublicKeyToAddress(byte[] hash160) {
 		if (hash160.length != 20) {
 			throw new IllegalArgumentException("bad length of hash160 bytes: expect 20 but actual " + hash160.length);
@@ -144,6 +153,17 @@ public class Secp256k1Utils {
 		byte[] checksum = HashUtils.doubleSha256(hashWithNetworkId);
 		byte[] address = BytesUtils.concat(hashWithNetworkId, Arrays.copyOfRange(checksum, 0, 4));
 		return Base58Utils.encode(address);
+	}
+
+	public static byte[] publicKeyAddressToBytes(String address) {
+		byte[] data = Base58Utils.decodeChecked(address);
+		if (data.length != 21) {
+			throw new IllegalArgumentException("bad length of decoded bytes: expect 21 but actual " + data.length);
+		}
+		if (data[0] != BitcoinConstants.NETWORK_ID) {
+			throw new IllegalArgumentException("Leading byte is not 0x00.");
+		}
+		return Arrays.copyOfRange(data, 1, data.length);
 	}
 
 }
