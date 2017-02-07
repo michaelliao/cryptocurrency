@@ -18,6 +18,7 @@ public class SecretKey {
 		return new SecretKey(this.label, copy);
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o instanceof SecretKey) {
 			SecretKey k = (SecretKey) o;
@@ -26,4 +27,8 @@ public class SecretKey {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.label, Arrays.hashCode(this.key));
+	}
 }
