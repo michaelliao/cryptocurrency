@@ -20,7 +20,7 @@ public class Payment {
 	final Log log = LogFactory.getLog(getClass());
 
 	List<UTxO> utxos = new ArrayList<>();
-	List<PayTo> pays = new ArrayList<>();
+	List<PayTo> payTos = new ArrayList<>();
 
 	public Payment() {
 		//
@@ -40,7 +40,7 @@ public class Payment {
 	}
 
 	public Payment payTo(String address, long amount) {
-		this.pays.add(new PayTo(address, amount));
+		this.payTos.add(new PayTo(address, amount));
 		return this;
 	}
 
@@ -49,13 +49,13 @@ public class Payment {
 		if (utxos.isEmpty()) {
 			throw new IllegalArgumentException("No UTXO alloc.");
 		}
-		if (pays.isEmpty()) {
+		if (payTos.isEmpty()) {
 			throw new IllegalArgumentException("No pay to specified.");
 		}
 		long total_unspend = utxos.stream().mapToLong((utxo) -> {
 			return utxo.amount;
 		}).sum();
-		long total_spend = pays.stream().mapToLong((pay) -> {
+		long total_spend = payTos.stream().mapToLong((pay) -> {
 			return pay.amount;
 		}).sum();
 		if (total_unspend < total_spend) {
@@ -85,9 +85,9 @@ public class Payment {
 			output.writeUnsignedInt(0xffffffffL);
 		}
 		// number of outputs:
-		output.writeVarInt(this.pays.size());
+		output.writeVarInt(this.payTos.size());
 		// each output:
-		for (PayTo pay : this.pays) {
+		for (PayTo pay : this.payTos) {
 			// btc:
 			output.writeLong(pay.amount);
 			// standard output script:
@@ -122,17 +122,17 @@ public class Payment {
 			output.writeUnsignedInt(0xffffffffL);
 		}
 		// number of outputs:
-		output.writeVarInt(this.pays.size());
+		output.writeVarInt(this.payTos.size());
 		// each output:
-		for (PayTo pay : this.pays) {
+		for (PayTo payTo : this.payTos) {
 			// btc:
-			output.writeLong(pay.amount);
+			output.writeLong(payTo.amount);
 			// standard output script:
 			// OP_DUP OP_HASH160 <pubkey> OP_EQUALVERIFY OP_CHECKSIG
-			output.write(generateOutputScript(pay));
+			output.write(generateOutputScript(payTo));
 		}
 		// lock time:
-		//output.writeInt(0);
+		output.writeInt(0);
 		// sign type: SIGHASH_ALL
 		output.writeInt(BitcoinConstants.SIGHASH_ALL);
 		// sign it:
