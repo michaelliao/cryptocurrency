@@ -158,7 +158,7 @@ public class Ops {
 					message = sigHashAll(context);
 					break;
 				default:
-					log.warn("Unsupported sighash: " + sigType);
+					log.warn("Unsupported sighash for this script engine: " + sigType);
 					return false;
 				}
 				log.info("payload: " + HashUtils.toHexString(message));

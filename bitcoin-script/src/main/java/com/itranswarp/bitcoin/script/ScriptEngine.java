@@ -48,6 +48,7 @@ public class ScriptEngine {
 		for (Op op : this.ops) {
 			log.info("> " + op);
 			if (!op.execute(context)) {
+				log.warn("failed!");
 				return false;
 			}
 			log.info("ok");

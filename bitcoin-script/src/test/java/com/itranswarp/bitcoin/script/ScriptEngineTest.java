@@ -57,6 +57,53 @@ public class ScriptEngineTest {
 	}
 
 	@Test
+	public void testTx2Inputs2Outputs() throws Exception {
+		// transaction:
+		// https://webbtc.com/tx/d7202bbc2bc3e1300217ec629ae902260a0440dcdb089f3dd90ce405268ccdf3
+		String txHash = "d7202bbc2bc3e1300217ec629ae902260a0440dcdb089f3dd90ce405268ccdf3";
+		byte[] txData = ClasspathUtils.loadAsBytes("/tx-" + txHash + ".dat");
+		Transaction tx = null;
+		try (BitcoinInput input = new BitcoinInput(txData)) {
+			tx = new Transaction(input);
+		}
+		assertEquals(2, tx.getTxInCount());
+		assertEquals(2, tx.getTxOutCount());
+		// load prev txs:
+		Transaction prevTx0 = null;
+		Transaction prevTx1 = null;
+		try (BitcoinInput input = new BitcoinInput(ClasspathUtils.loadAsBytes(
+				"/tx-" + HashUtils.toHexStringAsLittleEndian(tx.tx_ins[0].previousOutput.hash) + ".dat"))) {
+			prevTx0 = new Transaction(input);
+		}
+		try (BitcoinInput input = new BitcoinInput(ClasspathUtils.loadAsBytes(
+				"/tx-" + HashUtils.toHexStringAsLittleEndian(tx.tx_ins[1].previousOutput.hash) + ".dat"))) {
+			prevTx1 = new Transaction(input);
+		}
+		// load prev output:
+		TxOut prevOutput0 = prevTx0.tx_outs[(int) tx.tx_ins[0].previousOutput.index];
+		assertEquals(15879600L, prevOutput0.value);
+		TxOut prevOutput1 = prevTx1.tx_outs[(int) tx.tx_ins[1].previousOutput.index];
+		assertEquals(7950000L, prevOutput1.value);
+		// execute:
+		Map<String, TxOut> prevUtxos = new HashMap<>();
+		prevUtxos.put(
+				HashUtils.toHexStringAsLittleEndian(prevTx0.getTxHash()) + "#" + tx.tx_ins[0].previousOutput.index,
+				prevOutput0);
+		prevUtxos.put(
+				HashUtils.toHexStringAsLittleEndian(prevTx1.getTxHash()) + "#" + tx.tx_ins[1].previousOutput.index,
+				prevOutput1);
+		ScriptEngine engine = null;
+		// in0:
+		engine = ScriptEngine.parse(tx.tx_ins[0].sigScript, prevOutput0.pk_script);
+		assertTrue(engine.execute(tx, 0, prevUtxos));
+		assertEquals("1A9WgSDNBvrgSvTT5CH9iYyZRANw5mo4pP", engine.getExtractAddress());
+		// in1:
+		engine = ScriptEngine.parse(tx.tx_ins[1].sigScript, prevOutput1.pk_script);
+		assertTrue(engine.execute(tx, 1, prevUtxos));
+		assertEquals("1LygMU2TCKLsmQe8Hd7XV4ZYJoKtVHdMm9", engine.getExtractAddress());
+	}
+
+	@Test
 	public void testGetAddress() throws Exception {
 		// pizza transaction:
 		// https://webbtc.com/tx/cca7507897abc89628f450e8b1e0c6fca4ec3f7b34cccf55f3f531c659ff4d79
