@@ -142,7 +142,7 @@ public class ECDSAKeyPair {
 	 * Get Wallet Import Format string defined in:
 	 * https://en.bitcoin.it/wiki/Wallet_import_format
 	 */
-	public String getWIF() {
+	public String getUncompressedWIF() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
 		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key);
 		byte[] hash = HashUtils.doubleSha256(extendedKey);

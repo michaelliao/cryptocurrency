@@ -24,7 +24,7 @@ public class SecretKeyManagerTest {
 		for (int i = 0; i < 3; i++) {
 			ECDSAKeyPair kp = ECDSAKeyPair.createNewKeyPair();
 			keys.add(kp.getPrivateKey());
-			String wif = kp.getWIF();
+			String wif = kp.getUncompressedWIF();
 			manager.importKey("name-" + i, wif);
 		}
 		// try open wallet:

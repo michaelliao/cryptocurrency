@@ -24,7 +24,7 @@ public class ECDSAKeyPairTest {
 	public void testCreateKeyPairWithPrivateKey() {
 		BigInteger privateKey = new BigInteger("e9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", kp.getWIF());
+		assertEquals("5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", kp.getUncompressedWIF());
 	}
 
 	@Test
@@ -38,17 +38,17 @@ public class ECDSAKeyPairTest {
 	}
 
 	@Test
-	public void testGetWIF() {
+	public void testGetUncompressedWIF() {
 		BigInteger privateKey = new BigInteger("0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ", kp.getWIF());
+		assertEquals("5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ", kp.getUncompressedWIF());
 	}
 
 	@Test
 	public void testGetWIFs() {
 		BigInteger privateKey = new BigInteger("1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn", kp.getWIF());
+		assertEquals("5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn", kp.getUncompressedWIF());
 		assertEquals("KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ", kp.getCompressedWIF());
 	}
 
