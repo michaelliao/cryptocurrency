@@ -19,6 +19,11 @@ import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 import com.itranswarp.bitcoin.util.Secp256k1Utils;
 
+/**
+ * Bitcoin script engine to execute transaction script.
+ * 
+ * @author liaoxuefeng
+ */
 public class ScriptEngine {
 
 	static final Log log = LogFactory.getLog(ScriptEngine.class);
