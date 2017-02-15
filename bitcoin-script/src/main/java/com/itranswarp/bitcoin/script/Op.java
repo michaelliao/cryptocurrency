@@ -9,10 +9,23 @@ public abstract class Op {
 
 	public final String name;
 
+	/**
+	 * Op constructor.
+	 * 
+	 * @param name
+	 *            Human-readable name.
+	 */
 	public Op(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Execute the OP and return true if success.
+	 * 
+	 * @param context
+	 *            ScriptContext object.
+	 * @return True if success, otherwise false.
+	 */
 	public abstract boolean execute(ScriptContext context);
 
 	@Override
