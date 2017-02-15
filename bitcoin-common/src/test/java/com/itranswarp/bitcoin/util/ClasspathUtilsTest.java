@@ -2,12 +2,16 @@ package com.itranswarp.bitcoin.util;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.type.ResolvedType;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.itranswarp.bitcoin.util.sub.A;
+import com.itranswarp.bitcoin.util.sub.B;
+import com.itranswarp.bitcoin.util.sub.C;
 
 public class ClasspathUtilsTest {
 
@@ -19,21 +23,22 @@ public class ClasspathUtilsTest {
 	}
 
 	@Test
-	public void testGetResources() throws IOException, ClassNotFoundException {
+	public void testGetClasses() throws IOException {
 		String pkg = "com.itranswarp.bitcoin.util.sub";
-		List<String> cls = ClasspathUtils.getResources("/" + pkg.replace('.', '/'), new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".class");
-			}
-		});
+		List<Class<?>> cls = ClasspathUtils.getClasses(pkg);
 		assertEquals(3, cls.size());
-		assertTrue(cls.contains("A.class"));
-		assertTrue(cls.contains("B.class"));
-		assertTrue(cls.contains("C.class"));
-		// try load classes:
-		Class.forName(pkg + "." + "A");
-		Class.forName(pkg + "." + "B");
-		Class.forName(pkg + "." + "C");
+		assertTrue(cls.contains(A.class));
+		assertTrue(cls.contains(B.class));
+		assertTrue(cls.contains(C.class));
+	}
+
+	@Test
+	public void testGetClassesInJar() throws IOException {
+		String pkg = "com.fasterxml.jackson.core.type";
+		List<Class<?>> cls = ClasspathUtils.getClasses(pkg);
+		assertEquals(2, cls.size());
+		assertTrue(cls.contains(ResolvedType.class));
+		assertTrue(cls.contains(TypeReference.class));
+
 	}
 }

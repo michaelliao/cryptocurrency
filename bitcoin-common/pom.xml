@@ -13,6 +13,7 @@
 		<!-- artifact version -->
 		<bouncycastle.version>1.55</bouncycastle.version>
 		<commons.logging.version>1.1</commons.logging.version>
+		<guava.version>21.0</guava.version>
 		<jackson.version>2.8.3</jackson.version>
 		<junit.version>4.12</junit.version>
 	</properties>
@@ -37,6 +38,11 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
