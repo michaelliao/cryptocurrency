@@ -32,17 +32,21 @@ public class Ops {
 	static final byte[] TRUE = new byte[] { 1 };
 	static final byte[] FALSE = new byte[] { 0 };
 
+	// holds all ops:
 	static final Map<Integer, Op> OPS;
 
 	static {
 		Map<Integer, Op> map = new HashMap<>();
 
+		// Does nothing:
 		map.put(0x61, new Op("OP_NOP") {
 			@Override
 			public boolean execute(ScriptContext context) {
-				return false;
+				return true;
 			}
 		});
+
+		// Marks transaction as invalid if top stack value is not true:
 		map.put(0x69, new Op("OP_VERIFY") {
 			@Override
 			public boolean execute(ScriptContext context) {
@@ -54,20 +58,107 @@ public class Ops {
 			}
 		});
 
+		// Marks transaction as invalid:
+		map.put(0x6a, new Op("OP_RETURN") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				return false;
+			}
+		});
+
+		// Puts the input onto the top of the alt stack. Removes it from the
+		// main stack:
 		map.put(0x6b, new Op("OP_TOALTSTACK") {
 			@Override
 			public boolean execute(ScriptContext context) {
-				return false;
+				throw new UnsupportedOperationException(this.name);
 			}
 		});
 
+		// Puts the input onto the top of the main stack. Removes it from the
+		// alt stack:
 		map.put(0x6c, new Op("OP_FROMALTSTACK") {
 			@Override
 			public boolean execute(ScriptContext context) {
-				return false;
+				throw new UnsupportedOperationException(this.name);
 			}
 		});
 
+		// Removes the top two stack items:
+		map.put(0x6d, new Op("OP_2DROP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				return true;
+			}
+		});
+
+		// Duplicates the top two stack items:
+		map.put(0x6e, new Op("OP_2DUP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				context.push(top2);
+				context.push(top1);
+				context.push(top2);
+				context.push(top1);
+				return true;
+			}
+		});
+
+		// Duplicates the top three stack items:
+		map.put(0x6f, new Op("OP_3DUP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				byte[] top3 = context.pop();
+				if (top3 == null) {
+					return false;
+				}
+				context.push(top3);
+				context.push(top2);
+				context.push(top1);
+				context.push(top3);
+				context.push(top2);
+				context.push(top1);
+				return true;
+			}
+		});
+
+		// Removes the top stack item:
+		map.put(0x75, new Op("OP_DROP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top = context.pop();
+				if (top == null) {
+					return false;
+				}
+				return true;
+			}
+		});
+
+		// Duplicates the top stack item:
 		map.put(0x76, new Op("OP_DUP") {
 			@Override
 			public boolean execute(ScriptContext context) {
@@ -77,6 +168,60 @@ public class Ops {
 				}
 				context.push(top);
 				context.push(top);
+				return true;
+			}
+		});
+
+		// Removes the second-to-top stack item:
+		map.put(0x77, new Op("OP_NIP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				context.push(top1);
+				return true;
+			}
+		});
+
+		// Copies the second-to-top stack item to the top:
+		map.put(0x78, new Op("OP_OVER") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				context.push(top2);
+				context.push(top1);
+				context.push(top2);
+				return true;
+			}
+		});
+
+		// The top two items on the stack are swapped:
+		map.put(0x7c, new Op("OP_SWAP") {
+			@Override
+			public boolean execute(ScriptContext context) {
+				byte[] top1 = context.pop();
+				if (top1 == null) {
+					return false;
+				}
+				byte[] top2 = context.pop();
+				if (top2 == null) {
+					return false;
+				}
+				context.push(top1);
+				context.push(top2);
 				return true;
 			}
 		});
@@ -113,6 +258,8 @@ public class Ops {
 			}
 		});
 
+		// The input is hashed twice: first with SHA-256 and then with
+		// RIPEMD-160:
 		map.put(0xa9, new Op("OP_HASH160") {
 			@Override
 			public boolean execute(ScriptContext context) {
@@ -126,6 +273,7 @@ public class Ops {
 			}
 		});
 
+		// The input is hashed two times with SHA-256:
 		map.put(0xaa, new Op("OP_HASH256") {
 			@Override
 			public boolean execute(ScriptContext context) {
@@ -167,13 +315,6 @@ public class Ops {
 				log.info("public key: " + HashUtils.toHexString(pkData));
 				log.info("sig: " + sig.length + ": " + HashUtils.toHexString(sig));
 				return Secp256k1Utils.verify(msgHash, sig, pkData);
-			}
-		});
-
-		map.put(0000, new Op("???") {
-			@Override
-			public boolean execute(ScriptContext context) {
-				return false;
 			}
 		});
 
