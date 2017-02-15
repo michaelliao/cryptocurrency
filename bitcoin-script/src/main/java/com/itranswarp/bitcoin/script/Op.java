@@ -5,8 +5,12 @@ import org.apache.commons.logging.LogFactory;
 
 public abstract class Op {
 
+	public static final byte[] TRUE = new byte[] { 1 };
+	public static final byte[] FALSE = new byte[] { 0 };
+
 	protected final Log log = LogFactory.getLog(getClass());
 
+	public final int code;
 	public final String name;
 
 	/**
@@ -15,7 +19,8 @@ public abstract class Op {
 	 * @param name
 	 *            Human-readable name.
 	 */
-	public Op(String name) {
+	public Op(int code, String name) {
+		this.code = code;
 		this.name = name;
 	}
 

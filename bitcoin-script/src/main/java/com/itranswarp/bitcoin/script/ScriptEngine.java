@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.itranswarp.bitcoin.io.BitcoinInput;
+import com.itranswarp.bitcoin.script.op.OpVerify;
 import com.itranswarp.bitcoin.struct.Transaction;
 import com.itranswarp.bitcoin.struct.TxOut;
 import com.itranswarp.bitcoin.util.BytesUtils;
@@ -59,18 +60,7 @@ public class ScriptEngine {
 			log.info("ok");
 		}
 		// check top of stack is non-zero:
-		byte[] top = context.pop();
-		if (top == null || top.length == 0) {
-			return false;
-		}
-		boolean zero = true;
-		for (int i = 0; i < top.length; i++) {
-			if (top[i] != 0) {
-				zero = false;
-				break;
-			}
-		}
-		return !zero;
+		return OpVerify.executeVerify(context);
 	}
 
 	void printOp(Op op, Deque<byte[]> stack) {
@@ -91,7 +81,7 @@ public class ScriptEngine {
 			while ((n = input.read()) != (-1)) {
 				if (n >= 0x01 && n <= 0x4b) {
 					byte[] data = input.readBytes(n);
-					Op op = new DataOp(data);
+					Op op = new DataOp(n, data);
 					list.add(op);
 					log.info("OP: " + op);
 					if (n == 20 && address == null) {
@@ -164,22 +154,5 @@ class ScriptContextImpl implements ScriptContext {
 	public TxOut getUTXO(String txHash, long index) {
 		String key = txHash + "#" + index;
 		return this.prevUtxos.get(key);
-	}
-}
-
-class DataOp extends Op {
-
-	final byte[] data;
-
-	DataOp(byte[] data) {
-		super("DATA(" + HashUtils.toHexString(data) + ")");
-		this.data = data;
-	}
-
-	@Override
-	public boolean execute(ScriptContext context) {
-		log.info("push data: " + HashUtils.toHexString(data));
-		context.push(data);
-		return true;
 	}
 }
