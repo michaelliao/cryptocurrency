@@ -157,7 +157,8 @@ public class ECDSAKeyPair {
 	 */
 	public String getCompressedWIF() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
-		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key, new byte[] { 0x01 });
+		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key,
+				BitcoinConstants.PRIVATE_KEY_SUFFIX_ARRAY);
 		byte[] hash = HashUtils.doubleSha256(extendedKey);
 		byte[] checksum = Arrays.copyOfRange(hash, 0, 4);
 		byte[] extendedKeyWithChecksum = BytesUtils.concat(extendedKey, checksum);
@@ -176,6 +177,9 @@ public class ECDSAKeyPair {
 			// remove first 0x80:
 			return Arrays.copyOfRange(data, 1, data.length);
 		} else {
+			if (data[data.length - 1] != BitcoinConstants.PRIVATE_KEY_SUFFIX) {
+				throw new IllegalArgumentException("Ending byte is not 0x01.");
+			}
 			// remove first 0x80 and last 0x01:
 			return Arrays.copyOfRange(data, 1, data.length - 1);
 		}

@@ -47,6 +47,9 @@ public final class BitcoinConstants {
 	public static final byte PRIVATE_KEY_PREFIX = (byte) 0x80;
 	public static final byte[] PRIVATE_KEY_PREFIX_ARRAY = { PRIVATE_KEY_PREFIX };
 
+	public static final byte PRIVATE_KEY_SUFFIX = 0x01;
+	public static final byte[] PRIVATE_KEY_SUFFIX_ARRAY = { PRIVATE_KEY_SUFFIX };
+
 	/**
 	 * Minimum value of private key.
 	 */
