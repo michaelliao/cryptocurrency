@@ -1,5 +1,10 @@
 package com.itranswarp.bitcoin;
 
+/**
+ * Base exception for bitcoin app.
+ * 
+ * @author liaoxuefeng
+ */
 public class BitcoinException extends RuntimeException {
 
 	public BitcoinException() {
