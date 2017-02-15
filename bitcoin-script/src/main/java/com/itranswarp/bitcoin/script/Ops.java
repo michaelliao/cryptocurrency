@@ -314,7 +314,9 @@ public class Ops {
 				log.info("payload hash: " + HashUtils.toHexString(msgHash));
 				log.info("public key: " + HashUtils.toHexString(pkData));
 				log.info("sig: " + sig.length + ": " + HashUtils.toHexString(sig));
-				return Secp256k1Utils.verify(msgHash, sig, pkData);
+				boolean r = Secp256k1Utils.verify(msgHash, sig, pkData);
+				context.push(r ? TRUE : FALSE);
+				return true;
 			}
 		});
 

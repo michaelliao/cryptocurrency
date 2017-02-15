@@ -58,7 +58,19 @@ public class ScriptEngine {
 			}
 			log.info("ok");
 		}
-		return true;
+		// check top of stack is non-zero:
+		byte[] top = context.pop();
+		if (top == null || top.length == 0) {
+			return false;
+		}
+		boolean zero = true;
+		for (int i = 0; i < top.length; i++) {
+			if (top[i] != 0) {
+				zero = false;
+				break;
+			}
+		}
+		return !zero;
 	}
 
 	void printOp(Op op, Deque<byte[]> stack) {

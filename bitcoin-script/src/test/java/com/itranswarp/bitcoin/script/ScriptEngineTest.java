@@ -2,6 +2,7 @@ package com.itranswarp.bitcoin.script;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +55,11 @@ public class ScriptEngineTest {
 		}
 		assertTrue(engine.execute(pizzaTx, 0, prevUtxos));
 		assertEquals("17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ", engine.getExtractAddress());
+		// modify signature and execute again:
+		byte[] sigScript2 = Arrays.copyOf(sigScript, sigScript.length);
+		sigScript2[10] = 0x1f;
+		ScriptEngine engine2 = ScriptEngine.parse(sigScript2, outScript);
+		assertFalse(engine2.execute(pizzaTx, 0, prevUtxos));
 	}
 
 	@Test
