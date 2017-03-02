@@ -3,6 +3,8 @@ package com.itranswarp.bitcoin.wallet;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.itranswarp.bitcoin.keypair.ECDSAKeyPair;
+
 public class SecretKey {
 
 	public final String label;
@@ -16,6 +18,14 @@ public class SecretKey {
 	public SecretKey copy() {
 		byte[] copy = Arrays.copyOf(this.key, this.key.length);
 		return new SecretKey(this.label, copy);
+	}
+
+	public String toPublicAddress() {
+		return ECDSAKeyPair.of(this.key).toEncodedCompressedPublicKey();
+	}
+
+	public String toWIF() {
+		return ECDSAKeyPair.of(this.key).getCompressedWIF();
 	}
 
 	@Override

@@ -54,6 +54,11 @@ public class SecretKeyManager {
 		store();
 	}
 
+	public synchronized void generateNewKey(String name) {
+		this.keys.add(new SecretKey(name, ECDSAKeyPair.generatePrivateKey()));
+		store();
+	}
+
 	synchronized List<SecretKey> load() {
 		try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
 			EncryptedKeys eks = mapper.readValue(reader, EncryptedKeys.class);
