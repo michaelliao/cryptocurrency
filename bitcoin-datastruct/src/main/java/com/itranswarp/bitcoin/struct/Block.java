@@ -16,9 +16,7 @@ public class Block {
 
 	public byte[] getBlockHash() {
 		if (this.blockHash == null) {
-			byte[] data = new BitcoinOutput().writeInt(this.header.version).write(this.header.prevHash)
-					.write(this.header.merkleHash).writeUnsignedInt(this.header.timestamp)
-					.writeUnsignedInt(this.header.bits).writeUnsignedInt(this.header.nonce).toByteArray();
+			byte[] data = this.header.toByteArray();
 			this.blockHash = HashUtils.doubleSha256(data);
 		}
 		return this.blockHash;
