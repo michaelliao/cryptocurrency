@@ -19,3 +19,5 @@ hs_err_pid*
 /target/
 .*
 
+wallet.json
+
