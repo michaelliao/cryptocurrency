@@ -23,6 +23,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
 
+import com.itranswarp.bitcoin.util.Secp256k1Utils;
+
 public class Wallet extends JFrame {
 
 	private SecretKeyManager secretKeyManager;
@@ -44,6 +46,30 @@ public class Wallet extends JFrame {
 
 	void preparePay() {
 		System.out.println("prepare transaction...");
+		byte[] toAddr;
+		double amount;
+		double fee;
+		try {
+			toAddr = Secp256k1Utils.publicKeyAddressToBytes(this.txtPayAddress.getText().trim());
+		} catch (Exception e) {
+			throw new RuntimeException("Invalid address.");
+		}
+		try {
+			amount = Double.parseDouble(this.txtPayBtc.getText().trim());
+			if (amount < 0) {
+				throw new NumberFormatException();
+			}
+		} catch (NumberFormatException e) {
+			throw new RuntimeException("Invalid amount.");
+		}
+		try {
+			fee = Double.parseDouble(this.txtPayFee.getText().trim());
+			if (fee >= amount || fee < 0) {
+				throw new NumberFormatException();
+			}
+		} catch (NumberFormatException e) {
+			throw new RuntimeException("Invalid fee.");
+		}
 	}
 
 	void prepareAddAddress() {
@@ -118,17 +144,21 @@ public class Wallet extends JFrame {
 		lblPromptBalance = new JLabel();
 
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		setTitle("My Wallet");
+		setTitle("My Wallet (WARNING: TEST ONLY)");
 
 		jPanelPay.setBorder(BorderFactory.createTitledBorder("Pay"));
 		lblToAddress.setText("To address:");
-		lblPayBtc.setText("BTC:");
+		lblPayBtc.setText("Amount:");
 		lblPayFee.setText("Fee:");
 		txtPayFee.setText("0.001");
 		btnPay.setText("Pay");
 		btnPay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				preparePay();
+				try {
+					preparePay();
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null, e.getMessage());
+				}
 			}
 		});
 		GroupLayout jPanelPayLayout = new GroupLayout(jPanelPay);
