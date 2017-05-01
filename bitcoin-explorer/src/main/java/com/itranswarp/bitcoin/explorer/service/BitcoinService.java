@@ -56,22 +56,23 @@ public class BitcoinService implements MessageListener {
 	final Log log = LogFactory.getLog(getClass());
 
 	/**
-	 * 全局锁，在分布式环境中请替换为Hazelcast Distributed Lock.
+	 * Global lock. Using hazelcast distributed lock in distributed environment.
 	 */
 	final Lock lock = new ReentrantLock();
 
 	/**
-	 * 最新Block的hash，在分布式环境中请替换为Hazelcast Distributed Map.
+	 * The latest block hash. Using hazelcast distributed object in distributed
+	 * environment.
 	 */
 	private volatile String lastBlockHash = BitcoinConstants.ZERO_HASH;
 
 	/**
-	 * 按序存储待处理的BlockMessage
+	 * To-be-processed BlockMessage objects.
 	 */
 	private Deque<Block> deque = new LinkedList<>();
 
 	/**
-	 * 缓存不能处理的BlockMessage，key=prevHash
+	 * Cached Block data that cannot process now. key=prevHash
 	 */
 	private Map<String, Block> cache = new LRUCache<>();
 
