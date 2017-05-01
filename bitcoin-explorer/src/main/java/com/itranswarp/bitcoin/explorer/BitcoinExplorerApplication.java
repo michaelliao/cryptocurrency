@@ -46,7 +46,7 @@ public class BitcoinExplorerApplication {
 	boolean pebbleCache;
 
 	/**
-	 * 使用Pebble作为ViewEngine
+	 * Using Pebble as ViewEngine
 	 */
 	@Bean
 	public PebbleViewResolver pebbleViewResolver() {
@@ -93,7 +93,7 @@ public class BitcoinExplorerApplication {
 	public WebMvcConfigurer webMvcConfigurer() {
 		return new WebMvcConfigurerAdapter() {
 			/**
-			 * Spring默认把静态资源文件/static/abc.js映射到/abc.js，不利于配置反向代理。配置为保留/static/前缀
+			 * Keep "/static/**" prefix.
 			 */
 			@Override
 			public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -102,7 +102,7 @@ public class BitcoinExplorerApplication {
 			}
 
 			/**
-			 * Json默认序列化设置，增加Java8 Time支持
+			 * Add Java8 time support for Jackson.
 			 */
 			@Override
 			public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -139,6 +139,9 @@ class DateFilter implements Filter {
 	}
 }
 
+/**
+ * Filter to display date time.
+ */
 class DateTimeFilter implements Filter {
 
 	final ZoneId ZONE_ID = ZoneId.systemDefault();
@@ -158,6 +161,9 @@ class DateTimeFilter implements Filter {
 	}
 }
 
+/**
+ * Filter to display smart date.
+ */
 class SmartDateTimeFilter implements Filter {
 
 	final ZoneId ZONE_ID = ZoneId.systemDefault();
@@ -174,10 +180,10 @@ class SmartDateTimeFilter implements Filter {
 		long current = System.currentTimeMillis();
 		long minutes = (current - n) / 60000L;
 		if (minutes < 1) {
-			return "1分钟前";
+			return "1 minute ago";
 		}
 		if (minutes < 60) {
-			return minutes + "分钟前";
+			return minutes + " minutes ago";
 		}
 		Instant instant = Instant.ofEpochMilli(n);
 		LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZONE_ID);
@@ -185,6 +191,9 @@ class SmartDateTimeFilter implements Filter {
 	}
 }
 
+/**
+ * Filter to display size.
+ */
 class SizeFilter implements Filter {
 	@Override
 	public List<String> getArgumentNames() {

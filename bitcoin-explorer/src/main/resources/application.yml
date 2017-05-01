@@ -12,7 +12,7 @@ spring:
     properties:
       javax:
         persistence:
-          # 自动生成DDL脚本:
+          # auto generate DDL:
           schema-generation:
             create-source: metadata
             scripts:
