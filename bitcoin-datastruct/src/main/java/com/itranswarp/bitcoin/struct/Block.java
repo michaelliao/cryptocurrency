@@ -7,6 +7,11 @@ import com.itranswarp.bitcoin.io.BitcoinOutput;
 import com.itranswarp.bitcoin.util.BytesUtils;
 import com.itranswarp.bitcoin.util.HashUtils;
 
+/**
+ * Bitcoin block data.
+ * 
+ * @author Michael Liao
+ */
 public class Block {
 
 	public Header header;

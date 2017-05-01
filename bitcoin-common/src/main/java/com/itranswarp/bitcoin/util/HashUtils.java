@@ -16,12 +16,18 @@ import org.bouncycastle.util.Arrays;
 
 public class HashUtils {
 
+	/**
+	 * Get RipeMD160 hash.
+	 */
 	public static byte[] ripeMd160(byte[] input) {
 		MessageDigest digest = new RIPEMD160.Digest();
 		digest.update(input);
 		return digest.digest();
 	}
 
+	/**
+	 * Get SHA-256 hash.
+	 */
 	public static byte[] sha256(byte[] input) {
 		Digest d = new SHA256Digest();
 		d.update(input, 0, input.length);
@@ -30,6 +36,9 @@ public class HashUtils {
 		return out;
 	}
 
+	/**
+	 * Get double SHA-256 hash.
+	 */
 	public static byte[] doubleSha256(byte[] input) {
 		byte[] round1 = sha256(input);
 		return sha256(round1);
@@ -37,6 +46,9 @@ public class HashUtils {
 
 	static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
+	/**
+	 * Convert byte array to hex string.
+	 */
 	public static String toHexString(byte[] b) {
 		return toHexString(b, false);
 	}
@@ -55,6 +67,9 @@ public class HashUtils {
 		return sb.toString().trim();
 	}
 
+	/**
+	 * Convert byte array (little endian) to hex string.
+	 */
 	public static String toHexStringAsLittleEndian(byte[] b) {
 		StringBuilder sb = new StringBuilder(b.length << 2);
 		for (int i = b.length - 1; i >= 0; i--) {

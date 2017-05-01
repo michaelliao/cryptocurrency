@@ -6,6 +6,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 import com.itranswarp.bitcoin.serializer.TimestampSerializer;
 
+/**
+ * Timestamp and network address.
+ * 
+ * @author Michael Liao
+ */
 public class TimestampNetworkAddress {
 
 	/**

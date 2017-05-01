@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.itranswarp.bitcoin.io.BitcoinInput;
 
 /**
- * inventory array.
+ * Inventory array.
  * 
  * @author Michael Liao
  */

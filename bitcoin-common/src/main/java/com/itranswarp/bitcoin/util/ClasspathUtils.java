@@ -10,6 +10,9 @@ import com.google.common.reflect.ClassPath;
 
 public class ClasspathUtils {
 
+	/**
+	 * Load classpath resource as byte array.
+	 */
 	public static byte[] loadAsBytes(String classpath) throws IOException {
 		try (InputStream input = ClasspathUtils.class.getResourceAsStream(classpath)) {
 			if (input == null) {
@@ -27,8 +30,6 @@ public class ClasspathUtils {
 
 	/**
 	 * Get classes under package.
-	 * 
-	 * @throws IOException
 	 */
 	public static List<Class<?>> getClasses(String packageName) throws IOException {
 		return ClassPath.from(ClasspathUtils.class.getClassLoader()).getTopLevelClasses(packageName).stream()

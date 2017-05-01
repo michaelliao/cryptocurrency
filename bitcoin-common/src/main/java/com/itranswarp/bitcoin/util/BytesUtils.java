@@ -4,6 +4,9 @@ import org.bouncycastle.util.Arrays;
 
 public class BytesUtils {
 
+	/**
+	 * Is byte array ALL zeros?
+	 */
 	public static boolean isZeros(byte[] bs) {
 		for (byte b : bs) {
 			if (b != 0) {
@@ -13,6 +16,9 @@ public class BytesUtils {
 		return true;
 	}
 
+	/**
+	 * Join two byte arrays to a new byte array.
+	 */
 	public static byte[] concat(byte[] buf1, byte[] buf2) {
 		byte[] buffer = new byte[buf1.length + buf2.length];
 		int offset = 0;
@@ -22,6 +28,9 @@ public class BytesUtils {
 		return buffer;
 	}
 
+	/**
+	 * Join three byte arrays to a new byte array.
+	 */
 	public static byte[] concat(byte[] buf1, byte[] buf2, byte[] buf3) {
 		byte[] buffer = new byte[buf1.length + buf2.length + buf3.length];
 		int offset = 0;
@@ -33,6 +42,9 @@ public class BytesUtils {
 		return buffer;
 	}
 
+	/**
+	 * Is array equals? (length equals and every byte equals)
+	 */
 	public static boolean equals(byte[] b1, byte[] b2) {
 		if (b1 == null || b2 == null) {
 			throw new IllegalArgumentException("one of the arguments is null");
@@ -48,6 +60,9 @@ public class BytesUtils {
 		return true;
 	}
 
+	/**
+	 * Reverse the byte array. Return new reversed array.
+	 */
 	public static byte[] reverse(byte[] msgHash) {
 		return Arrays.reverse(msgHash);
 	}
