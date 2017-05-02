@@ -16,7 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.itranswarp.crypto</groupId>
-			<artifactId>bitcoin-keypair</artifactId>
+			<artifactId>bitcoin-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
