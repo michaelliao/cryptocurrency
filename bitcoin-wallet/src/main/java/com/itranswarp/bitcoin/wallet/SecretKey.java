@@ -25,7 +25,7 @@ public class SecretKey {
 	}
 
 	public String toWIF() {
-		return ECDSAKeyPair.of(this.key).getCompressedWIF();
+		return ECDSAKeyPair.of(this.key).toCompressedWIF();
 	}
 
 	@Override

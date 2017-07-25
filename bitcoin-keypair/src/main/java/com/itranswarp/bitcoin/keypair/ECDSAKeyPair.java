@@ -44,22 +44,22 @@ public class ECDSAKeyPair {
 	}
 
 	/**
-	 * Create KeyPair with specified private key.
+	 * Create KeyPair with specified private key (compressed).
 	 */
 	public static ECDSAKeyPair of(byte[] privateKey) {
 		return of(new BigInteger(1, privateKey));
 	}
 
 	/**
-	 * Create KeyPair with specified private key.
+	 * Create KeyPair with specified private key (compressed).
 	 */
 	public static ECDSAKeyPair of(BigInteger privateKey) {
 		checkPrivateKey(privateKey);
-		return new ECDSAKeyPair(privateKey, false);
+		return new ECDSAKeyPair(privateKey, true);
 	}
 
 	/**
-	 * Create a new KeyPair with secure random private key.
+	 * Create a new KeyPair with secure random private key (compressed).
 	 */
 	public static ECDSAKeyPair createNewKeyPair() {
 		return of(generatePrivateKey());
@@ -123,26 +123,14 @@ public class ECDSAKeyPair {
 			byte[] y = normed.getYCoord().getEncoded();
 			this.publicKey = new BigInteger[] { new BigInteger(1, x), new BigInteger(1, y) };
 		}
-		return this.publicKey;
+		return Arrays.clone(this.publicKey);
 	}
 
 	/**
-	 * Get version 1 of BitCoin address (hash of public key):
-	 * https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
-	 */
-	public String getAddress() {
-		BigInteger[] keys = getPublicKey();
-		byte[] xs = bigIntegerToBytes(keys[0], 32);
-		byte[] ys = bigIntegerToBytes(keys[1], 32);
-		byte[] uncompressed = BytesUtils.concat(BitcoinConstants.PUBLIC_KEY_PREFIX_ARRAY, xs, ys);
-		return Secp256k1Utils.uncompressedPublicKeyToAddress(uncompressed);
-	}
-
-	/**
-	 * Get Wallet Import Format string defined in:
+	 * Get uncompressed Wallet Import Format string defined in:
 	 * https://en.bitcoin.it/wiki/Wallet_import_format
 	 */
-	public String getUncompressedWIF() {
+	public String toUncompressedWIF() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
 		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key);
 		byte[] hash = HashUtils.doubleSha256(extendedKey);
@@ -155,7 +143,7 @@ public class ECDSAKeyPair {
 	 * Get Compressed Wallet Import Format string defined in:
 	 * https://en.bitcoin.it/wiki/Wallet_import_format
 	 */
-	public String getCompressedWIF() {
+	public String toCompressedWIF() {
 		byte[] key = bigIntegerToBytes(this.privateKey, 32);
 		byte[] extendedKey = BytesUtils.concat(BitcoinConstants.PRIVATE_KEY_PREFIX_ARRAY, key,
 				BitcoinConstants.PRIVATE_KEY_SUFFIX_ARRAY);

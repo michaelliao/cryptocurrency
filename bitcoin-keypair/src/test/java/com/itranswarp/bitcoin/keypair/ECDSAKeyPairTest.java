@@ -24,7 +24,7 @@ public class ECDSAKeyPairTest {
 	public void testCreateKeyPairWithPrivateKey() {
 		BigInteger privateKey = new BigInteger("e9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", kp.getUncompressedWIF());
+		assertEquals("5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", kp.toUncompressedWIF());
 	}
 
 	@Test
@@ -41,15 +41,15 @@ public class ECDSAKeyPairTest {
 	public void testGetUncompressedWIF() {
 		BigInteger privateKey = new BigInteger("0c28fca386c7a227600b2fe50b7cae11ec86d3bf1fbe471be89827e19d72aa1d", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ", kp.getUncompressedWIF());
+		assertEquals("5HueCGU8rMjxEXxiPuD5BDku4MkFqeZyd4dZ1jvhTVqvbTLvyTJ", kp.toUncompressedWIF());
 	}
 
 	@Test
-	public void testGetWIFs() {
+	public void testToWIFs() {
 		BigInteger privateKey = new BigInteger("1e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn", kp.getUncompressedWIF());
-		assertEquals("KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ", kp.getCompressedWIF());
+		assertEquals("5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn", kp.toUncompressedWIF());
+		assertEquals("KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ", kp.toCompressedWIF());
 	}
 
 	@Test
@@ -76,9 +76,9 @@ public class ECDSAKeyPairTest {
 	}
 
 	@Test
-	public void testGetAddress() {
+	public void testToEncodedUncompressedPublicKey() {
 		BigInteger privateKey = new BigInteger("18e14a7b6a307f426a94f8114701e7c8e774e7f9a47e2c2035db29a206321725", 16);
 		ECDSAKeyPair kp = ECDSAKeyPair.of(privateKey);
-		assertEquals("16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM", kp.getAddress());
+		assertEquals("16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM", kp.toEncodedUncompressedPublicKey());
 	}
 }
