@@ -46,4 +46,13 @@ public class HashUtilsTest {
 		byte[] data = HashUtils.toBytesAsLittleEndian(s);
 		assertEquals(s, HashUtils.toHexStringAsLittleEndian(data));
 	}
+
+	@Test
+	public void testHmacSha512() {
+		byte[] seed = HashUtils.toBytes("000102030405060708090a0b0c0d0e0f");
+		byte[] hash = HashUtils.hmacSha512(seed, "Bitcoin seed");
+		assertEquals(
+				"e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508",
+				HashUtils.toHexString(hash));
+	}
 }

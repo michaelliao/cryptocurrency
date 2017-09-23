@@ -116,6 +116,27 @@ public class HashUtils {
 		return Base64.getEncoder().encodeToString(rawHmac);
 	}
 
+	/**
+	 * Get Hmac-SHA512 of data using specified key.
+	 * 
+	 * @param data
+	 *            Bytes of data.
+	 * @param key
+	 *            String as key.
+	 * @return Raw bytes (64) of Hmac-SHA512.
+	 */
+	public static byte[] hmacSha512(byte[] data, String key) {
+		SecretKeySpec signingKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
+		Mac mac = null;
+		try {
+			mac = Mac.getInstance("HmacSHA512");
+			mac.init(signingKey);
+		} catch (NoSuchAlgorithmException | InvalidKeyException e) {
+			throw new RuntimeException(e);
+		}
+		return mac.doFinal(data);
+	}
+
 	static int char2int(char ch) {
 		if (ch >= '0' && ch <= '9') {
 			return ch - '0';
