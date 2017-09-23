@@ -74,14 +74,14 @@ public class BIP32 {
 			this.index = index;
 		}
 
-		public byte[] serialize() {
+		public String serialize() {
 			byte[] b1 = BytesUtils.concat(BytesUtils.intToByteArray(this.version), new byte[] { (byte) depth },
 					this.fingerprint);
 			byte[] b2 = BytesUtils.concat(BytesUtils.intToByteArray(this.index), this.chainCode, this.key);
 			byte[] ser = BytesUtils.concat(b1, b2);
 			byte[] checksum = HashUtils.doubleSha256(ser);
 			byte[] result = BytesUtils.concat(ser, Arrays.copyOfRange(checksum, 0, 4));
-			return result;
+			return Base58Utils.encode(result);
 		}
 
 		public static BIP32Key deserialize(String base58Str) {

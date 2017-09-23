@@ -12,7 +12,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.itranswarp.bitcoin.keypair.BIP32.BIP32Key;
-import com.itranswarp.bitcoin.util.Base58Utils;
 
 @RunWith(Parameterized.class)
 public class BIP32Test {
@@ -41,10 +40,10 @@ public class BIP32Test {
 	public void testGenerateMasterKey() {
 		BigInteger seed = new BigInteger(this.seed, 16);
 		BIP32Key key = BIP32.generateMasterKey(seed);
-		String encoded = Base58Utils.encode(key.serialize());
+		String encoded = key.serialize();
 		assertEquals(this.extPrivate, encoded);
 		BIP32Key recover = BIP32Key.deserialize(encoded);
-		assertEquals(this.extPrivate, Base58Utils.encode(recover.serialize()));
+		assertEquals(this.extPrivate, recover.serialize());
 	}
 
 }
