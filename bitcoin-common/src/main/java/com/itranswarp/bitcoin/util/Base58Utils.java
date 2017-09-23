@@ -3,9 +3,11 @@ package com.itranswarp.bitcoin.util;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import com.itranswarp.bitcoin.constant.BitcoinConstants;
+
 public class Base58Utils {
 
-	static final char[] ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
+	static final char[] ALPHABET = BitcoinConstants.BASE58_CHARS.toCharArray();
 	static final char ENCODED_ZERO = ALPHABET[0];
 	static final int[] INDEXES = new int[128];
 

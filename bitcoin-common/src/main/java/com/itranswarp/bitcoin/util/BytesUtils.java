@@ -67,4 +67,28 @@ public class BytesUtils {
 		return Arrays.reverse(msgHash);
 	}
 
+	/**
+	 * Convert int to 4 bytes.
+	 * 
+	 * @param value
+	 *            Int value.
+	 * @return 4 bytes.
+	 */
+	public static byte[] intToByteArray(int value) {
+		return new byte[] { (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value };
+	}
+
+	/**
+	 * Convert 4 bytes to int.
+	 * 
+	 * @param bs
+	 *            Byte array with length of 4.
+	 * @return int value.
+	 */
+	public static int bytesToInt(byte[] bs) {
+		if (bs == null || bs.length != 4) {
+			throw new IllegalArgumentException("Invalid bytes.");
+		}
+		return bs[0] << 24 | (bs[1] & 0xff) << 16 | (bs[2] & 0xff) << 8 | (bs[3] & 0xff);
+	}
 }

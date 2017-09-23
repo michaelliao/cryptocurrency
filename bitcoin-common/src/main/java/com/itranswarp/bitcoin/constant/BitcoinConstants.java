@@ -27,6 +27,11 @@ public final class BitcoinConstants {
 	public static final long NETWORK_SERVICES = 1L;
 
 	/**
+	 * Legal base58 characters.
+	 */
+	public static final String BASE58_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+	/**
 	 * Network ID: 0x00 = main network.
 	 */
 	public static final byte NETWORK_ID = 0x00;
@@ -49,6 +54,12 @@ public final class BitcoinConstants {
 
 	public static final byte PRIVATE_KEY_SUFFIX = 0x01;
 	public static final byte[] PRIVATE_KEY_SUFFIX_ARRAY = { PRIVATE_KEY_SUFFIX };
+
+	public static final int MAINNET_BIP32_PUBLIC = 0x0488b21e;
+	public static final int MAINNET_BIP32_PRIVATE = 0x0488ade4;
+
+	public static final int TESTNET_BIP32_PUBLIC = 0x043587cf;
+	public static final int TESTNET_BIP32_PRIVATE = 0x04358394;
 
 	/**
 	 * Minimum value of private key.
